@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  username String @unique
+  email String @unique
+  password String //hashed password string
+  bio String? @db.VarChar(240)
+  profilePic String? //url
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sentFriendRequests Friendship[] @relation(name: "sentRequest")
+  receivedFriendRequests Friendship[] @relation(name: "receivedRequest")
+  posts Post[]
+  comments Comment[]
+  likes Like[]
+}
+
+enum FriendshipStatus {
+  Accepted
+  Declined
+  Pending
+  Blocked
+}
+
+model Friendship {
+  id Int @id @default(autoincrement())
+  status FriendshipStatus @default(Pending)
+
+  sender     User   @relation(name: "sentRequest", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId Int 
+
+  receiver   User   @relation(name: "receivedRequest", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiverId Int
+
+}
+
+model Post {
+  id Int @id @default(autoincrement())
+  content String 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author User @relation(fields: [authorID], references: [id], onDelete: Cascade)
+  authorID Int
+  likes Like[]
+}
+
+model Comment {
+  id Int @id @default(autoincrement())
+  content String @db.VarChar(1000) 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author User @relation(fields: [authorID], references: [id], onDelete: Cascade)
+  authorID Int
+  likes Like[]
+}
+
+model Like {
+  id Int @id @default(autoincrement())
+  author User @relation(fields: [authorID], references: [id], onDelete: Cascade)
+  authorID Int
+
+  post Post? @relation(fields: [postID], references: [id], onDelete: Cascade)
+  postID Int? 
+
+  comment Comment? @relation(fields: [commentID], references: [id], onDelete: Cascade)
+  commentID Int? 
+
+  // @check("postID IS NOT NULL OR commentID IS NOT NULL")
+}
