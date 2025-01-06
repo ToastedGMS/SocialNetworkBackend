@@ -45,16 +45,43 @@ async function dbCreateUser({ userInfo }) {
 		};
 	} catch (error) {
 		console.error('Unexpected database error:', error);
-		throw new Error('An unexpected error occurred. Please try again later.');
+		throw new Error(`An unexpected error occurred. Details: ${error.message}`);
 	}
 }
 
-// async function dbReadUser(){
-// 	try {
+async function dbReadUser({ userInfo }) {
+	if (
+		//if object is empty or all keys are null or empty strings
+		!userInfo ||
+		(!userInfo.id && !userInfo.username && !userInfo.email) ||
+		(userInfo.id === '' && userInfo.username === '' && userInfo.email === '')
+	) {
+		throw new Error('Search query may not be null or empty.');
+	}
+	try {
+		const foundUser = await prisma.user.findFirst({
+			where: {
+				OR: [
+					{ id: userInfo.id },
+					{
+						username: userInfo.username,
+					},
+					{
+						email: userInfo.email,
+					},
+				],
+			},
+		});
 
-// 	} catch (error) {
+		if (!foundUser) {
+			throw new Error('Provided user was not found. Please try again.');
+		}
 
-// 	}
-// }
+		return foundUser;
+	} catch (error) {
+		console.error('Unexpected database error:', error);
+		throw new Error(`An unexpected error occurred. Details: ${error.message}`);
+	}
+}
 
-module.exports = { dbCreateUser };
+module.exports = { dbCreateUser, dbReadUser };
