@@ -84,4 +84,49 @@ async function dbReadUser({ userInfo }) {
 	}
 }
 
-module.exports = { dbCreateUser, dbReadUser };
+async function dbUpdateUser({ userInfo }) {
+	const currentUser = await prisma.user.findFirst({
+		where: {
+			id: userInfo.id,
+		},
+	});
+	const {
+		id,
+		username = currentUser.username,
+		email = currentUser.email,
+		bio = null,
+		profilePic = currentUser.profilePic,
+	} = userInfo;
+
+	if (
+		currentUser.username === username &&
+		currentUser.email === email &&
+		currentUser.bio === bio &&
+		currentUser.profilePic === profilePic
+	) {
+		return 'No values to update.';
+	}
+
+	if (/[^a-zA-Z0-9]/.test(username)) {
+		throw new Error('Username may not contain any special characters');
+	}
+
+	try {
+		const updatedUser = await prisma.user.update({
+			where: { id: id },
+			data: {
+				username,
+				email,
+				bio,
+				profilePic,
+			},
+		});
+
+		return updatedUser;
+	} catch (error) {
+		console.error('Unexpected database error:', error);
+		throw new Error(`An unexpected error occurred. Details: ${error.message}`);
+	}
+}
+
+module.exports = { dbCreateUser, dbReadUser, dbUpdateUser };

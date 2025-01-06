@@ -1,11 +1,16 @@
 const prisma = require('../prismaClient/prismaClient.cjs');
 const bcrypt = require('bcryptjs');
-const { dbCreateUser, dbReadUser } = require('../scripts/users.cjs');
+const {
+	dbCreateUser,
+	dbReadUser,
+	dbUpdateUser,
+} = require('../scripts/users.cjs');
 
 jest.mock('../prismaClient/prismaClient.cjs', () => ({
 	user: {
 		create: jest.fn(),
 		findFirst: jest.fn(),
+		update: jest.fn(),
 	},
 }));
 
@@ -171,5 +176,198 @@ describe('dbReadUser', () => {
 				'Provided user was not found. Please try again.'
 			);
 		}
+	});
+});
+
+describe('dbUpdateUser', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	test('should not call database if there are no fields to update', async () => {
+		prisma.user.update.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			profilePic: 'profile.jpg',
+		});
+
+		prisma.user.findFirst.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			profilePic: 'profile.jpg',
+		});
+
+		const query = {
+			userInfo: {
+				id: 1,
+				username: 'testuser',
+				email: 'test@example.com',
+				bio: 'This is a test bio',
+				profilePic: 'profile.jpg',
+			},
+		};
+
+		await expect(dbUpdateUser(query)).resolves.toBe('No values to update.');
+		expect(prisma.user.update).not.toHaveBeenCalled();
+	});
+
+	test('should not update empty fields (except bio)', async () => {
+		prisma.user.update.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			bio: null,
+			profilePic: 'profile.jpg',
+		});
+
+		prisma.user.findFirst.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			profilePic: 'profile.jpg',
+		});
+
+		const query = {
+			userInfo: {
+				id: 1,
+				username: null,
+				email: null,
+				bio: null,
+				profilePic: null,
+			},
+		};
+
+		await expect(dbUpdateUser(query)).resolves.toEqual({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			bio: null,
+			profilePic: 'profile.jpg',
+		});
+	});
+
+	test('updates user when at least one field is different', async () => {
+		prisma.user.update.mockResolvedValue({
+			id: 1,
+			username: 'updatedtestuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			profilePic: 'profile.jpg',
+		});
+
+		prisma.user.findFirst.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			profilePic: 'profile.jpg',
+		});
+
+		const query = {
+			userInfo: {
+				id: 1,
+				username: 'updatedtestuser',
+				email: 'test@example.com',
+				bio: 'This is a test bio',
+				profilePic: 'profile.jpg',
+			},
+		};
+
+		await expect(dbUpdateUser(query)).resolves.toEqual({
+			id: 1,
+			username: 'updatedtestuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			profilePic: 'profile.jpg',
+		});
+	});
+
+	test('should throw an error if username contains special characters', async () => {
+		prisma.user.update.mockResolvedValue({
+			id: 1,
+			username: 'updatedtestuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			profilePic: 'profile.jpg',
+		});
+
+		prisma.user.findFirst.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			profilePic: 'profile.jpg',
+		});
+
+		const query = {
+			userInfo: {
+				id: 1,
+				username: 'updated_test_user!',
+				email: 'test@example.com',
+				bio: 'This is a test bio',
+				profilePic: 'profile.jpg',
+			},
+		};
+
+		await expect(dbUpdateUser(query)).rejects.toThrow(
+			'Username may not contain any special characters'
+		);
+		expect(prisma.user.update).not.toHaveBeenCalled();
+	});
+
+	test('should throw an error for unexpected database errors', async () => {
+		prisma.user.update.mockRejectedValue(new Error('Unexpected Error'));
+
+		const query = {
+			userInfo: {
+				id: 1,
+				username: 'updatedtestuser',
+				email: 'test@example.com',
+				bio: 'This is a test bio',
+				profilePic: 'profile.jpg',
+			},
+		};
+
+		await expect(dbUpdateUser(query)).rejects.toThrow(
+			'An unexpected error occurred. Details: Unexpected Error'
+		);
+	});
+
+	test('should handle missing keys', async () => {
+		prisma.user.findFirst.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			profilePic: 'profile.jpg',
+		});
+
+		prisma.user.update.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'updated@example.com',
+			bio: 'This is a test bio',
+			profilePic: 'profile.jpg',
+		});
+
+		const query = {
+			userInfo: {
+				id: 1,
+				email: 'updated@example.com',
+			},
+		};
+
+		await expect(dbUpdateUser(query)).resolves.toEqual({
+			id: 1,
+			username: 'testuser',
+			email: 'updated@example.com',
+			bio: 'This is a test bio',
+			profilePic: 'profile.jpg',
+		});
 	});
 });
