@@ -4,6 +4,7 @@ const {
 	dbCreateUser,
 	dbReadUser,
 	dbUpdateUser,
+	dbDeleteUser,
 } = require('../scripts/users.cjs');
 
 jest.mock('../prismaClient/prismaClient.cjs', () => ({
@@ -11,11 +12,13 @@ jest.mock('../prismaClient/prismaClient.cjs', () => ({
 		create: jest.fn(),
 		findFirst: jest.fn(),
 		update: jest.fn(),
+		delete: jest.fn(),
 	},
 }));
 
 jest.mock('bcryptjs', () => ({
 	hash: jest.fn(),
+	compare: jest.fn(),
 }));
 
 describe('dbCreateUser', () => {
@@ -369,5 +372,86 @@ describe('dbUpdateUser', () => {
 			bio: 'This is a test bio',
 			profilePic: 'profile.jpg',
 		});
+	});
+});
+
+describe('dbDeleteUser', () => {
+	test('should not execute if password does not match', async () => {
+		prisma.user.delete.mockResolvedValue(null);
+
+		prisma.user.findFirst.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			password: 'hashedPassword',
+			profilePic: 'profile.jpg',
+		});
+
+		bcrypt.compare.mockResolvedValue(false);
+
+		const query = {
+			userInfo: {
+				id: 1,
+				password: 'password',
+			},
+		};
+
+		await expect(dbDeleteUser(query)).rejects.toThrow(
+			'Forbidden action: Password does not match.'
+		);
+		expect(prisma.user.delete).not.toHaveBeenCalled();
+	});
+
+	test('deletes user if everything is right', async () => {
+		prisma.user.delete.mockResolvedValue(null);
+
+		prisma.user.findFirst.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			password: 'hashedPassword',
+			profilePic: 'profile.jpg',
+		});
+
+		bcrypt.compare.mockResolvedValue(true);
+
+		const query = {
+			userInfo: {
+				id: 1,
+				password: 'password',
+			},
+		};
+
+		await expect(dbDeleteUser(query)).resolves.toEqual(
+			'User deleted successfully.'
+		);
+	});
+
+	test('should throw an error for unexpected database errors', async () => {
+		prisma.user.delete.mockRejectedValue(new Error('Unexpected Error'));
+
+		prisma.user.findFirst.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			bio: 'This is a test bio',
+			password: 'hashedPassword',
+			profilePic: 'profile.jpg',
+		});
+
+		bcrypt.compare.mockResolvedValue(true);
+
+		const query = {
+			userInfo: {
+				id: 1,
+				password: 'password',
+			},
+		};
+
+		await expect(dbDeleteUser(query)).rejects.toThrow(
+			'An unexpected error occurred. Details: Unexpected Error'
+		);
 	});
 });

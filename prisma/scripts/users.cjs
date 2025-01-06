@@ -129,4 +129,29 @@ async function dbUpdateUser({ userInfo }) {
 	}
 }
 
-module.exports = { dbCreateUser, dbReadUser, dbUpdateUser };
+async function dbDeleteUser({ userInfo }) {
+	const { id, password } = userInfo;
+	const currentUser = await prisma.user.findFirst({
+		where: {
+			id: id,
+		},
+	});
+
+	if ((await bcrypt.compare(password, currentUser.password)) === false) {
+		throw new Error('Forbidden action: Password does not match.');
+	}
+	try {
+		await prisma.user.delete({
+			where: {
+				id: id,
+			},
+		});
+
+		return 'User deleted successfully.';
+	} catch (error) {
+		console.error('Unexpected database error:', error);
+		throw new Error(`An unexpected error occurred. Details: ${error.message}`);
+	}
+}
+
+module.exports = { dbCreateUser, dbReadUser, dbUpdateUser, dbDeleteUser };
