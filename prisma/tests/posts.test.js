@@ -1,10 +1,12 @@
 const prisma = require('../prismaClient/prismaClient.cjs');
 
-const { dbCreatePost } = require('../scripts/posts.cjs');
+const { dbCreatePost, dbReadPost } = require('../scripts/posts.cjs');
 
 jest.mock('../prismaClient/prismaClient.cjs', () => ({
 	post: {
 		create: jest.fn(),
+		findUnique: jest.fn(),
+		findMany: jest.fn(),
 	},
 }));
 
@@ -95,6 +97,74 @@ describe('dbCreatePost', () => {
 			})
 		).rejects.toThrow(
 			'An unexpected error occurred. Details: Unexpected database error'
+		);
+	});
+});
+
+describe('dbReadPost', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	test('should retrieve a single post by id and its author', async () => {
+		const input = { id: 1 };
+		const mockPost = {
+			id: 1,
+			content: 'Example Post',
+			authorID: 1,
+			author: { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
+		};
+
+		prisma.post.findUnique.mockResolvedValue(mockPost);
+
+		await expect(dbReadPost(input)).resolves.toEqual(mockPost);
+		expect(prisma.post.findUnique).toHaveBeenCalledWith({
+			where: { id: 1 },
+			include: { author: true },
+		});
+	});
+
+	test('should retrieve multiple posts by authorID and their author information', async () => {
+		const input = { authorID: 1 };
+		const mockPosts = [
+			{
+				id: 1,
+				content: 'Post 1',
+				authorID: 1,
+				author: { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
+			},
+			{
+				id: 2,
+				content: 'Post 2',
+				authorID: 1,
+				author: { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
+			},
+		];
+
+		prisma.post.findMany.mockResolvedValue(mockPosts);
+
+		await expect(dbReadPost(input)).resolves.toEqual(mockPosts);
+		expect(prisma.post.findMany).toHaveBeenCalledWith({
+			where: { authorID: 1 },
+			include: { author: true },
+		});
+	});
+
+	test('should throw error if post with given id does not exist', async () => {
+		const input = { id: 999 };
+		prisma.post.findUnique.mockResolvedValue(null);
+
+		await expect(dbReadPost(input)).rejects.toThrow(
+			'Post with ID 999 not found.'
+		);
+	});
+
+	test('should handle unexpected database errors', async () => {
+		const input = { id: 1 };
+		prisma.post.findUnique.mockRejectedValue(new Error('Database error'));
+
+		await expect(dbReadPost(input)).rejects.toThrow(
+			'An unexpected error occurred. Details: Database error'
 		);
 	});
 });
