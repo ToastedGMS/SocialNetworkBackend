@@ -1,12 +1,13 @@
 const prisma = require('../prismaClient/prismaClient.cjs');
 
-async function dbCreateComment({ authorID, content }) {
-	if (!authorID || !content) {
+async function dbCreateComment({ authorID, content, postID }) {
+	if (!authorID || !content || !postID) {
 		throw new Error('Missing parameters for comment creation.');
 	}
+
 	let id = authorID;
 
-	if (typeof authorID !== 'number') {
+	if (typeof authorID != 'number') {
 		id = parseInt(authorID, 10);
 	}
 	if (content.length > 1000) {
@@ -18,6 +19,7 @@ async function dbCreateComment({ authorID, content }) {
 			data: {
 				authorID: id,
 				content,
+				postID,
 			},
 		});
 
@@ -28,14 +30,12 @@ async function dbCreateComment({ authorID, content }) {
 	}
 }
 
-async function dbReadComment({ id, authorID }) {
+async function dbReadComment({ id, authorID, postID }) {
 	if (id) {
-		// Get comment by comment ID (also return author info)
+		// Retrieve comment by comment ID (also return post and author info)
 		try {
 			const comment = await prisma.comment.findUnique({
-				where: {
-					id: id,
-				},
+				where: { id },
 				include: {
 					author: true,
 				},
@@ -53,18 +53,16 @@ async function dbReadComment({ id, authorID }) {
 	}
 
 	if (authorID) {
-		// Get all comments by a specific author using their ID (also return author info)
+		// Get all comments by a specific author
 		try {
 			const comments = await prisma.comment.findMany({
 				where: {
-					authorID: authorID,
+					authorID,
 				},
 				include: {
 					author: true,
 				},
-				orderBy: {
-					createdAt: 'desc', // Order by creation date in descending order
-				},
+				orderBy: { createdAt: 'desc' },
 			});
 			return comments;
 		} catch (error) {
@@ -75,20 +73,25 @@ async function dbReadComment({ id, authorID }) {
 		}
 	}
 
-	try {
-		// Get all comments
-		const comments = await prisma.comment.findMany({
-			include: {
-				author: true,
-			},
-			orderBy: {
-				createdAt: 'desc', // Order by creation date in descending order
-			},
-		});
-		return comments;
-	} catch (error) {
-		console.error('Unexpected database error:', error);
-		throw new Error(`An unexpected error occurred. Details: ${error.message}`);
+	if (postID) {
+		// Get all comments for a specific post
+		try {
+			const comments = await prisma.comment.findMany({
+				where: {
+					postID,
+				},
+				include: {
+					author: true,
+				},
+				orderBy: { createdAt: 'desc' },
+			});
+			return comments;
+		} catch (error) {
+			console.error('Unexpected database error:', error);
+			throw new Error(
+				`An unexpected error occurred. Details: ${error.message}`
+			);
+		}
 	}
 }
 
@@ -122,10 +125,6 @@ async function dbUpdateComment({ id, content }) {
 		throw new Error(
 			'Missing parameters: Comment ID and content are required for updating.'
 		);
-	}
-
-	if (content.length > 1000) {
-		throw new Error('Content exceeds the maximum length of 1000 characters.');
 	}
 
 	try {

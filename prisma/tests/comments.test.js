@@ -1,5 +1,4 @@
 const prisma = require('../prismaClient/prismaClient.cjs');
-
 const {
 	dbCreateComment,
 	dbReadComment,
@@ -24,11 +23,9 @@ describe('dbCreateComment', () => {
 
 	test('does not perform comment creation if required fields are empty', async () => {
 		const invalidInputs = [
-			{ authorID: null, content: 'example' },
-			{
-				authorID: 1,
-				content: null,
-			},
+			{ authorID: null, content: 'example', postID: 1 },
+			{ authorID: 1, content: null, postID: 1 },
+			{ authorID: 1, content: 'example', postID: null },
 		];
 
 		for (const input of invalidInputs) {
@@ -44,6 +41,7 @@ describe('dbCreateComment', () => {
 		const input = {
 			authorID: 1,
 			content: 'a'.repeat(1000),
+			postID: 1,
 		};
 
 		prisma.comment.create.mockResolvedValue({
@@ -51,6 +49,7 @@ describe('dbCreateComment', () => {
 			content: input.content,
 			createdAt: 'Current Time',
 			authorID: 1,
+			postID: 1,
 		});
 
 		await expect(dbCreateComment(input)).resolves.toEqual({
@@ -58,6 +57,7 @@ describe('dbCreateComment', () => {
 			content: input.content,
 			createdAt: 'Current Time',
 			authorID: 1,
+			postID: 1,
 		});
 	});
 
@@ -65,6 +65,7 @@ describe('dbCreateComment', () => {
 		const input = {
 			authorID: 1,
 			content: 'a'.repeat(1001),
+			postID: 1,
 		};
 
 		await expect(dbCreateComment(input)).rejects.toThrow(
@@ -75,13 +76,14 @@ describe('dbCreateComment', () => {
 	});
 
 	test('should return a comment object if all is well', async () => {
-		const input = { authorID: 1, content: 'Example' };
+		const input = { authorID: 1, content: 'Example', postID: 1 };
 
 		prisma.comment.create.mockResolvedValue({
 			id: 1,
 			content: 'Example',
 			createdAt: 'Current Time',
 			authorID: 1,
+			postID: 1,
 		});
 
 		await expect(dbCreateComment(input)).resolves.toEqual({
@@ -89,6 +91,7 @@ describe('dbCreateComment', () => {
 			content: 'Example',
 			createdAt: 'Current Time',
 			authorID: 1,
+			postID: 1,
 		});
 	});
 
@@ -101,6 +104,7 @@ describe('dbCreateComment', () => {
 			dbCreateComment({
 				authorID: 1,
 				content: 'Example',
+				postID: 1,
 			})
 		).rejects.toThrow(
 			'An unexpected error occurred. Details: Unexpected database error'
@@ -131,7 +135,7 @@ describe('dbReadComment', () => {
 		});
 	});
 
-	test('should retrieve multiple comments by authorID and their author information', async () => {
+	test('should retrieve all comments by authorID and their associated author info', async () => {
 		const input = { authorID: 1 };
 		const mockComments = [
 			{
@@ -153,6 +157,33 @@ describe('dbReadComment', () => {
 		await expect(dbReadComment(input)).resolves.toEqual(mockComments);
 		expect(prisma.comment.findMany).toHaveBeenCalledWith({
 			where: { authorID: 1 },
+			include: { author: true },
+			orderBy: { createdAt: 'desc' },
+		});
+	});
+
+	test('should retrieve all comments for a specific postID', async () => {
+		const input = { postID: 1 };
+		const mockComments = [
+			{
+				id: 1,
+				content: 'Comment 1',
+				authorID: 1,
+				author: { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
+			},
+			{
+				id: 2,
+				content: 'Comment 2',
+				authorID: 1,
+				author: { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
+			},
+		];
+
+		prisma.comment.findMany.mockResolvedValue(mockComments);
+
+		await expect(dbReadComment(input)).resolves.toEqual(mockComments);
+		expect(prisma.comment.findMany).toHaveBeenCalledWith({
+			where: { postID: 1 },
 			include: { author: true },
 			orderBy: { createdAt: 'desc' },
 		});
@@ -184,7 +215,12 @@ describe('dbDeleteComment', () => {
 
 	test('should delete a comment successfully by ID', async () => {
 		const input = { id: 1 };
-		const mockComment = { id: 1, content: 'Example Comment', authorID: 1 };
+		const mockComment = {
+			id: 1,
+			content: 'Example Comment',
+			authorID: 1,
+			postID: 1,
+		};
 
 		prisma.comment.findUnique.mockResolvedValue(mockComment);
 		prisma.comment.delete.mockResolvedValue();
@@ -243,9 +279,19 @@ describe('dbUpdateComment', () => {
 	});
 
 	test('should update a comment successfully by ID', async () => {
-		const input = { id: 1, content: 'Updated content' };
-		const mockComment = { id: 1, content: 'Old content', authorID: 1 };
-		const updatedComment = { id: 1, content: 'Updated content', authorID: 1 };
+		const input = { id: 1, content: 'Updated comment' };
+		const mockComment = {
+			id: 1,
+			content: 'Old comment',
+			authorID: 1,
+			postID: 1,
+		};
+		const updatedComment = {
+			id: 1,
+			content: 'Updated comment',
+			authorID: 1,
+			postID: 1,
+		};
 
 		prisma.comment.findUnique.mockResolvedValue(mockComment);
 		prisma.comment.update.mockResolvedValue(updatedComment);
@@ -257,7 +303,7 @@ describe('dbUpdateComment', () => {
 		});
 		expect(prisma.comment.update).toHaveBeenCalledWith({
 			where: { id: 1 },
-			data: { content: 'Updated content' },
+			data: { content: 'Updated comment' },
 		});
 	});
 
