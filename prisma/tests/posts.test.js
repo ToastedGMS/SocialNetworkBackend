@@ -1,12 +1,17 @@
 const prisma = require('../prismaClient/prismaClient.cjs');
 
-const { dbCreatePost, dbReadPost } = require('../scripts/posts.cjs');
+const {
+	dbCreatePost,
+	dbReadPost,
+	dbDeletePost,
+} = require('../scripts/posts.cjs');
 
 jest.mock('../prismaClient/prismaClient.cjs', () => ({
 	post: {
 		create: jest.fn(),
 		findUnique: jest.fn(),
 		findMany: jest.fn(),
+		delete: jest.fn(),
 	},
 }));
 
@@ -147,6 +152,7 @@ describe('dbReadPost', () => {
 		expect(prisma.post.findMany).toHaveBeenCalledWith({
 			where: { authorID: 1 },
 			include: { author: true },
+			orderBy: { createdAt: 'desc' },
 		});
 	});
 
@@ -166,5 +172,65 @@ describe('dbReadPost', () => {
 		await expect(dbReadPost(input)).rejects.toThrow(
 			'An unexpected error occurred. Details: Database error'
 		);
+	});
+});
+
+describe('dbDeletePost', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	test('should delete a post successfully by ID', async () => {
+		const input = { id: 1 };
+		const mockPost = { id: 1, content: 'Example Post', authorID: 1 };
+
+		prisma.post.findUnique.mockResolvedValue(mockPost);
+		prisma.post.delete.mockResolvedValue();
+
+		await expect(dbDeletePost(input)).resolves.toEqual({
+			message: 'Post with ID 1 deleted successfully.',
+		});
+
+		expect(prisma.post.findUnique).toHaveBeenCalledWith({
+			where: { id: 1 },
+		});
+		expect(prisma.post.delete).toHaveBeenCalledWith({
+			where: { id: 1 },
+		});
+	});
+
+	test('should throw an error if the post ID is not provided', async () => {
+		await expect(dbDeletePost({})).rejects.toThrow(
+			'Missing parameter: Post ID is required for deletion.'
+		);
+
+		expect(prisma.post.findUnique).not.toHaveBeenCalled();
+		expect(prisma.post.delete).not.toHaveBeenCalled();
+	});
+
+	test('should throw an error if the post with the given ID does not exist', async () => {
+		prisma.post.findUnique.mockResolvedValue(null);
+
+		await expect(dbDeletePost({ id: 999 })).rejects.toThrow(
+			'Post with ID 999 not found.'
+		);
+
+		expect(prisma.post.findUnique).toHaveBeenCalledWith({
+			where: { id: 999 },
+		});
+		expect(prisma.post.delete).not.toHaveBeenCalled();
+	});
+
+	test('should handle unexpected database errors', async () => {
+		prisma.post.findUnique.mockRejectedValue(new Error('Database error'));
+
+		await expect(dbDeletePost({ id: 1 })).rejects.toThrow(
+			'An unexpected error occurred. Details: Database error'
+		);
+
+		expect(prisma.post.findUnique).toHaveBeenCalledWith({
+			where: { id: 1 },
+		});
+		expect(prisma.post.delete).not.toHaveBeenCalled();
 	});
 });

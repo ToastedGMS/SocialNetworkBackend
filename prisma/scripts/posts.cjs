@@ -1,5 +1,4 @@
 const prisma = require('../prismaClient/prismaClient.cjs');
-const { dbReadUser } = require('./users.cjs');
 
 async function dbCreatePost({ authorID, content }) {
 	if (!authorID || !content) {
@@ -31,6 +30,7 @@ async function dbCreatePost({ authorID, content }) {
 
 async function dbReadPost({ id, authorID }) {
 	if (id) {
+		//get post by post ID (also return author info)
 		try {
 			const post = await prisma.post.findUnique({
 				where: {
@@ -53,6 +53,7 @@ async function dbReadPost({ id, authorID }) {
 	}
 
 	if (authorID) {
+		////get all posts by a specific author using their ID (also return author info)
 		try {
 			const posts = await prisma.post.findMany({
 				where: {
@@ -60,6 +61,9 @@ async function dbReadPost({ id, authorID }) {
 				},
 				include: {
 					author: true,
+				},
+				orderBy: {
+					createdAt: 'desc', // Order by creation date in descending order
 				},
 			});
 			return posts;
@@ -72,9 +76,13 @@ async function dbReadPost({ id, authorID }) {
 	}
 
 	try {
+		//get all posts
 		const posts = await prisma.post.findMany({
 			include: {
 				author: true,
+			},
+			orderBy: {
+				createdAt: 'desc', // Order by creation date in descending order
 			},
 		});
 		return posts;
@@ -84,4 +92,29 @@ async function dbReadPost({ id, authorID }) {
 	}
 }
 
-module.exports = { dbCreatePost, dbReadPost };
+async function dbDeletePost({ id }) {
+	if (!id) {
+		throw new Error('Missing parameter: Post ID is required for deletion.');
+	}
+
+	try {
+		const post = await prisma.post.findUnique({
+			where: { id },
+		});
+
+		if (!post) {
+			throw new Error(`Post with ID ${id} not found.`);
+		}
+
+		await prisma.post.delete({
+			where: { id },
+		});
+
+		return { message: `Post with ID ${id} deleted successfully.` };
+	} catch (error) {
+		console.error('Unexpected database error:', error);
+		throw new Error(`An unexpected error occurred. Details: ${error.message}`);
+	}
+}
+
+module.exports = { dbCreatePost, dbReadPost, dbDeletePost };
