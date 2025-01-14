@@ -117,4 +117,32 @@ async function dbDeletePost({ id }) {
 	}
 }
 
-module.exports = { dbCreatePost, dbReadPost, dbDeletePost };
+async function dbUpdatePost({ id, content }) {
+	if (!id || !content) {
+		throw new Error(
+			'Missing parameters: Post ID and content are required for updating.'
+		);
+	}
+
+	try {
+		const post = await prisma.post.findUnique({
+			where: { id },
+		});
+
+		if (!post) {
+			throw new Error(`Post with ID ${id} not found.`);
+		}
+
+		const updatedPost = await prisma.post.update({
+			where: { id },
+			data: { content },
+		});
+
+		return updatedPost;
+	} catch (error) {
+		console.error('Unexpected database error:', error);
+		throw new Error(`An unexpected error occurred. Details: ${error.message}`);
+	}
+}
+
+module.exports = { dbCreatePost, dbReadPost, dbDeletePost, dbUpdatePost };

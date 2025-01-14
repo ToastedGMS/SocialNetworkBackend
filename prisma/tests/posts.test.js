@@ -4,6 +4,7 @@ const {
 	dbCreatePost,
 	dbReadPost,
 	dbDeletePost,
+	dbUpdatePost,
 } = require('../scripts/posts.cjs');
 
 jest.mock('../prismaClient/prismaClient.cjs', () => ({
@@ -12,6 +13,7 @@ jest.mock('../prismaClient/prismaClient.cjs', () => ({
 		findUnique: jest.fn(),
 		findMany: jest.fn(),
 		delete: jest.fn(),
+		update: jest.fn(),
 	},
 }));
 
@@ -232,5 +234,69 @@ describe('dbDeletePost', () => {
 			where: { id: 1 },
 		});
 		expect(prisma.post.delete).not.toHaveBeenCalled();
+	});
+});
+
+describe('dbUpdatePost', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	test('should update a post successfully by ID', async () => {
+		const input = { id: 1, content: 'Updated content' };
+		const mockPost = { id: 1, content: 'Old content', authorID: 1 };
+		const updatedPost = { id: 1, content: 'Updated content', authorID: 1 };
+
+		prisma.post.findUnique.mockResolvedValue(mockPost);
+		prisma.post.update.mockResolvedValue(updatedPost);
+
+		await expect(dbUpdatePost(input)).resolves.toEqual(updatedPost);
+
+		expect(prisma.post.findUnique).toHaveBeenCalledWith({
+			where: { id: 1 },
+		});
+		expect(prisma.post.update).toHaveBeenCalledWith({
+			where: { id: 1 },
+			data: { content: 'Updated content' },
+		});
+	});
+
+	test('should throw an error if the post ID or content is not provided', async () => {
+		await expect(dbUpdatePost({})).rejects.toThrow(
+			'Missing parameters: Post ID and content are required for updating.'
+		);
+
+		await expect(dbUpdatePost({ id: 1 })).rejects.toThrow(
+			'Missing parameters: Post ID and content are required for updating.'
+		);
+
+		expect(prisma.post.findUnique).not.toHaveBeenCalled();
+		expect(prisma.post.update).not.toHaveBeenCalled();
+	});
+
+	test('should throw an error if the post with the given ID does not exist', async () => {
+		prisma.post.findUnique.mockResolvedValue(null);
+
+		await expect(
+			dbUpdatePost({ id: 999, content: 'Updated content' })
+		).rejects.toThrow('Post with ID 999 not found.');
+
+		expect(prisma.post.findUnique).toHaveBeenCalledWith({
+			where: { id: 999 },
+		});
+		expect(prisma.post.update).not.toHaveBeenCalled();
+	});
+
+	test('should handle unexpected database errors', async () => {
+		prisma.post.findUnique.mockRejectedValue(new Error('Database error'));
+
+		await expect(
+			dbUpdatePost({ id: 1, content: 'Updated content' })
+		).rejects.toThrow('An unexpected error occurred. Details: Database error');
+
+		expect(prisma.post.findUnique).toHaveBeenCalledWith({
+			where: { id: 1 },
+		});
+		expect(prisma.post.update).not.toHaveBeenCalled();
 	});
 });
