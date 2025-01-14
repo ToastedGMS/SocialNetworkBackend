@@ -55,6 +55,7 @@ model Post {
   updatedAt DateTime @updatedAt
   author User @relation(fields: [authorID], references: [id], onDelete: Cascade)
   authorID Int
+  comments Comment []
   likes Like[]
 }
 
@@ -65,6 +66,8 @@ model Comment {
   updatedAt DateTime @updatedAt
   author User @relation(fields: [authorID], references: [id], onDelete: Cascade)
   authorID Int
+  post Post @relation(fields: [postID], references: [id], onDelete: Cascade)
+  postID Int
   likes Like[]
 }
 
