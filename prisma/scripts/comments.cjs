@@ -32,7 +32,6 @@ async function dbCreateComment({ authorID, content, postID }) {
 
 async function dbReadComment({ id, authorID, postID }) {
 	if (id) {
-		// Retrieve comment by comment ID (also return post and author info)
 		try {
 			const comment = await prisma.comment.findUnique({
 				where: { id },
@@ -53,7 +52,6 @@ async function dbReadComment({ id, authorID, postID }) {
 	}
 
 	if (authorID) {
-		// Get all comments by a specific author
 		try {
 			const comments = await prisma.comment.findMany({
 				where: {
@@ -74,7 +72,6 @@ async function dbReadComment({ id, authorID, postID }) {
 	}
 
 	if (postID) {
-		// Get all comments for a specific post
 		try {
 			const comments = await prisma.comment.findMany({
 				where: {
