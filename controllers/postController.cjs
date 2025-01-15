@@ -25,7 +25,10 @@ async function createPost(req, res) {
 async function readPost(req, res) {
 	try {
 		const { id, authorID } = req.query;
-		const post = await dbReadPost({ id, authorID });
+		const post = await dbReadPost({
+			id: parseInt(id, 10),
+			authorID: parseInt(authorID, 10),
+		});
 		return res.status(200).json(post);
 	} catch (error) {
 		console.error('Error reading post:', error);
@@ -35,8 +38,8 @@ async function readPost(req, res) {
 
 async function deletePost(req, res) {
 	try {
-		const { id } = req.body;
-		const deletionMessage = await dbDeletePost({ id });
+		const { id } = req.query;
+		const deletionMessage = await dbDeletePost({ id: parseInt(id, 10) });
 		return res.status(200).json(deletionMessage);
 	} catch (error) {
 		console.error('Error deleting post:', error);
@@ -52,8 +55,9 @@ async function deletePost(req, res) {
 
 async function updatePost(req, res) {
 	try {
-		const { id, content } = req.body;
-		const updatedPost = await dbUpdatePost({ id, content });
+		const { id } = req.query;
+		const { content } = req.body;
+		const updatedPost = await dbUpdatePost({ id: parseInt(id, 10), content });
 		return res.status(200).json(updatedPost);
 	} catch (error) {
 		console.error('Error updating post:', error);
