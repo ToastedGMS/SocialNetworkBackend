@@ -9,8 +9,8 @@ const {
 } = require('../controllers/postController.cjs');
 
 router.post('/new', createPost);
-router.get('/read', readPost);
-router.put('/update', updatePost);
-router.delete('/delete', deletePost);
+router.get('/read/:id', readPost);
+router.put('/update/:id', updatePost);
+router.delete('/delete/:id', deletePost);
 
 module.exports = router;

@@ -123,7 +123,7 @@ describe('Post Controller', () => {
 
 	describe('deletePost', () => {
 		test('returns a 200 with a success message', async () => {
-			req.body = { id: 1 };
+			req.params = { id: 1 };
 			dbDeletePost.mockResolvedValue({
 				message: 'Post with ID 1 deleted successfully.',
 			});
@@ -137,7 +137,7 @@ describe('Post Controller', () => {
 		});
 
 		test('returns a 400 error if missing parameters', async () => {
-			req.body = {}; // Missing id
+			req.params = {}; // Missing id
 
 			const error = 'Missing parameter: Post ID is required for deletion.';
 			dbDeletePost.mockRejectedValue(new Error(error));
@@ -149,7 +149,7 @@ describe('Post Controller', () => {
 		});
 
 		test('returns a 400 error if post not found', async () => {
-			req.body = { id: 1 };
+			req.params = { id: 1 };
 
 			const error = 'Post with ID 1 not found.';
 			dbDeletePost.mockRejectedValue(new Error(error));
@@ -163,7 +163,9 @@ describe('Post Controller', () => {
 
 	describe('updatePost', () => {
 		test('returns a 200 with the updated post', async () => {
-			req.body = { id: 1, content: 'Updated content' };
+			req.params = { id: 1 };
+
+			req.body = { content: 'Updated content' };
 			dbUpdatePost.mockResolvedValue({
 				id: 1,
 				authorID: 1,
@@ -181,7 +183,9 @@ describe('Post Controller', () => {
 		});
 
 		test('returns a 400 error if missing parameters', async () => {
-			req.body = { id: 1 }; // Missing content
+			req.params = { id: 1 };
+
+			req.body = {}; // Missing content
 
 			const error =
 				'Missing parameters: Post ID and content are required for updating.';
@@ -194,7 +198,9 @@ describe('Post Controller', () => {
 		});
 
 		test('returns a 400 error if post not found', async () => {
-			req.body = { id: 1, content: 'Updated content' };
+			req.params = { id: 1 };
+
+			req.body = { content: 'Updated content' };
 
 			const error = 'Post with ID 1 not found.';
 			dbUpdatePost.mockRejectedValue(new Error(error));

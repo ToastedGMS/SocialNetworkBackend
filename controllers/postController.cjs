@@ -38,7 +38,7 @@ async function readPost(req, res) {
 
 async function deletePost(req, res) {
 	try {
-		const { id } = req.query;
+		const { id } = req.params;
 		const deletionMessage = await dbDeletePost({ id: parseInt(id, 10) });
 		return res.status(200).json(deletionMessage);
 	} catch (error) {
@@ -55,7 +55,7 @@ async function deletePost(req, res) {
 
 async function updatePost(req, res) {
 	try {
-		const { id } = req.query;
+		const { id } = req.params;
 		const { content } = req.body;
 		const updatedPost = await dbUpdatePost({ id: parseInt(id, 10), content });
 		return res.status(200).json(updatedPost);
