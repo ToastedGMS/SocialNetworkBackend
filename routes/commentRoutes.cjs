@@ -10,7 +10,7 @@ const {
 
 router.post('/new', createComment);
 router.get('/read', readComment);
-router.put('/update', updateComment);
-router.delete('/delete', deleteComment);
+router.put('/update/:id', updateComment);
+router.delete('/delete/:id', deleteComment);
 
 module.exports = router;

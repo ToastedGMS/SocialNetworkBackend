@@ -56,7 +56,9 @@ async function deleteComment(req, res) {
 
 async function updateComment(req, res) {
 	try {
-		const { id, content } = req.body;
+		const { id } = req.params;
+
+		const { content } = req.body;
 		if (content.length > 1000) {
 			throw new Error('Content exceeds the maximum length of 1000 characters.');
 		}

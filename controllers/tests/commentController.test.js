@@ -176,7 +176,7 @@ describe('updateComment controller', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		req = { body: {} };
+		req = { body: {}, params: {} };
 		res = {
 			status: jest.fn().mockReturnThis(),
 			json: jest.fn(),
@@ -185,9 +185,9 @@ describe('updateComment controller', () => {
 
 	test('returns a 400 error when content exceeds the maximum length', async () => {
 		req.body = {
-			id: 1,
 			content: 'a'.repeat(1001), // Content too long
 		};
+		req.params = { id: 1 };
 
 		const error = 'Content exceeds the maximum length of 1000 characters.';
 		dbUpdateComment.mockRejectedValue(new Error(error));
@@ -210,9 +210,9 @@ describe('updateComment controller', () => {
 
 	test('returns a 200 with the updated comment on successful requests', async () => {
 		req.body = {
-			id: 1,
 			content: 'Updated content',
 		};
+		req.params = { id: 1 };
 
 		const updatedComment = {
 			id: 1,
