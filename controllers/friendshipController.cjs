@@ -30,7 +30,7 @@ async function createFriendship(req, res) {
 
 async function getFriendshipStatus(req, res) {
 	try {
-		const { senderId, receiverId } = req.params;
+		const { senderId, receiverId } = req.body;
 
 		if (!senderId || !receiverId) {
 			return res
