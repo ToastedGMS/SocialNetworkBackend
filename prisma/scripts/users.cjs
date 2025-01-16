@@ -24,6 +24,32 @@ async function dbCreateUser({ userInfo }) {
 		throw new Error('Password must be at least 8 characters long.');
 	}
 
+	const existingUser = await prisma.user.findFirst({
+		where: {
+			OR: [
+				{
+					username: userInfo.username,
+				},
+				{
+					email: userInfo.email,
+				},
+			],
+		},
+	});
+
+	if (existingUser) {
+		if (existingUser.email === email) {
+			throw new Error(
+				'That email is already in use. Please choose a different email.'
+			);
+		}
+		if (existingUser.username === username) {
+			throw new Error(
+				'That username is already taken. Please choose a different username.'
+			);
+		}
+	}
+
 	const hashedPassword = await bcrypt.hash(password, 10);
 
 	try {

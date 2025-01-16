@@ -20,7 +20,8 @@ async function createUser(req, res) {
 		if (
 			error.message.includes('required fields') ||
 			error.message.includes('special characters') ||
-			error.message.includes('at least 8 characters')
+			error.message.includes('at least 8 characters') ||
+			error.message.includes('choose a different')
 		) {
 			return res.status(400).json({ error: error.message });
 		}
