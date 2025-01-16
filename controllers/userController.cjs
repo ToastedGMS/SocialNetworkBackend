@@ -31,7 +31,8 @@ async function createUser(req, res) {
 
 async function readUser(req, res) {
 	try {
-		const { id, email, username } = req.body;
+		const { id } = req.params;
+		const { email, username } = req.body;
 
 		const user = await dbReadUser({ userInfo: { id, username, email } });
 
@@ -51,7 +52,9 @@ async function readUser(req, res) {
 
 async function updateUser(req, res) {
 	try {
-		const { id, username, email, bio, profilePic } = req.body;
+		const { id } = req.params;
+
+		const { username, email, bio, profilePic } = req.body;
 		const updatedUser = await dbUpdateUser({
 			userInfo: { id, username, email, bio, profilePic },
 		});
@@ -73,7 +76,9 @@ async function updateUser(req, res) {
 
 async function deleteUser(req, res) {
 	try {
-		const { id, password } = req.body;
+		const { id } = req.params;
+
+		const { password } = req.body;
 		const deletionMessage = await dbDeleteUser({ userInfo: { id, password } });
 
 		return res.status(200).json({ message: deletionMessage });

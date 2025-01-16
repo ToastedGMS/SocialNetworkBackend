@@ -133,7 +133,7 @@ describe('readUser controller', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		req = { body: {} };
+		req = { body: {}, params: {} };
 		res = {
 			status: jest.fn().mockReturnThis(),
 			json: jest.fn(),
@@ -183,8 +183,8 @@ describe('readUser controller', () => {
 		req.body = {
 			username: 'testuser',
 			email: 'test@example.com',
-			id: 1,
 		};
+		req.params = { id: 1 };
 
 		dbReadUser.mockResolvedValue(user);
 
@@ -209,12 +209,12 @@ describe('updateUser controller', () => {
 
 	test('returns a 400 error when special characters are included', async () => {
 		req.body = {
-			id: 1,
 			username: 'test_user!',
 			email: 'test@example.com',
 			bio: null,
 			profilePic: 'pic.png',
 		};
+		req.params = { id: 1 };
 
 		const error = 'Username may not contain any special characters';
 		dbUpdateUser.mockRejectedValue(new Error(error));
@@ -227,12 +227,13 @@ describe('updateUser controller', () => {
 
 	test('returns a message indicating no updates when values provided are not different', async () => {
 		req.body = {
-			id: 1,
 			username: 'testuser',
 			email: 'test@example.com',
 			bio: null,
 			profilePic: 'pic.png',
 		};
+		req.params = { id: 1 };
+
 		prisma.user.findFirst.mockResolvedValue({
 			id: 1,
 			username: 'testuser',
@@ -262,12 +263,13 @@ describe('updateUser controller', () => {
 
 	test('returns a 200 with the user object on successful requests', async () => {
 		req.body = {
-			id: 1,
 			username: 'testuser',
 			email: 'test@example.com',
 			bio: null,
 			profilePic: 'pic.png',
 		};
+		req.params = { id: 1 };
+
 		dbUpdateUser.mockResolvedValue({
 			id: 1,
 			username: 'testuser',
@@ -303,9 +305,9 @@ describe('deleteUser controller', () => {
 
 	test('returns a 403 error if password does not match', async () => {
 		req.body = {
-			id: 1,
 			password: 'incorrectPassword',
 		};
+		req.params = { id: 1 };
 
 		const error = 'Forbidden action: Password does not match.';
 		dbDeleteUser.mockRejectedValue(new Error(error));
@@ -328,9 +330,9 @@ describe('deleteUser controller', () => {
 
 	test('returns a 200 success message when user is deleted successfully', async () => {
 		req.body = {
-			id: 1,
 			password: 'correctPassword',
 		};
+		req.params = { id: 1 };
 
 		const message = 'User deleted successfully.';
 		dbDeleteUser.mockResolvedValue(message);
