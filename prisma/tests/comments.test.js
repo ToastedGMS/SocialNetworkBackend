@@ -131,7 +131,20 @@ describe('dbReadComment', () => {
 		await expect(dbReadComment(input)).resolves.toEqual(mockComment);
 		expect(prisma.comment.findUnique).toHaveBeenCalledWith({
 			where: { id: 1 },
-			include: { author: true },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+						bio: true,
+						profilePic: true,
+						createdAt: true,
+						updatedAt: true,
+						// Exclude password here by not including it in the select object
+					},
+				},
+			},
 		});
 	});
 
@@ -157,7 +170,20 @@ describe('dbReadComment', () => {
 		await expect(dbReadComment(input)).resolves.toEqual(mockComments);
 		expect(prisma.comment.findMany).toHaveBeenCalledWith({
 			where: { authorID: 1 },
-			include: { author: true },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+						bio: true,
+						profilePic: true,
+						createdAt: true,
+						updatedAt: true,
+						// Exclude password here by not including it in the select object
+					},
+				},
+			},
 			orderBy: { createdAt: 'desc' },
 		});
 	});
@@ -184,7 +210,20 @@ describe('dbReadComment', () => {
 		await expect(dbReadComment(input)).resolves.toEqual(mockComments);
 		expect(prisma.comment.findMany).toHaveBeenCalledWith({
 			where: { postID: 1 },
-			include: { author: true },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+						bio: true,
+						profilePic: true,
+						createdAt: true,
+						updatedAt: true,
+						// Exclude password here by not including it in the select object
+					},
+				},
+			},
 			orderBy: { createdAt: 'desc' },
 		});
 	});

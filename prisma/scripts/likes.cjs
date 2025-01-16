@@ -69,7 +69,20 @@ async function dbReadLikesForPost(postID) {
 	try {
 		const likes = await prisma.like.findMany({
 			where: { postID },
-			include: { author: true },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+						bio: true,
+						profilePic: true,
+						createdAt: true,
+						updatedAt: true,
+						// Exclude password here by not including it in the select object
+					},
+				},
+			},
 		});
 
 		return likes;
@@ -89,7 +102,20 @@ async function dbReadLikesForComment(commentID) {
 	try {
 		const likes = await prisma.like.findMany({
 			where: { commentID },
-			include: { author: true },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+						bio: true,
+						profilePic: true,
+						createdAt: true,
+						updatedAt: true,
+						// Exclude password here by not including it in the select object
+					},
+				},
+			},
 		});
 
 		return likes;

@@ -36,7 +36,18 @@ async function dbReadComment({ id, authorID, postID }) {
 			const comment = await prisma.comment.findUnique({
 				where: { id },
 				include: {
-					author: true,
+					author: {
+						select: {
+							id: true,
+							username: true,
+							email: true,
+							bio: true,
+							profilePic: true,
+							createdAt: true,
+							updatedAt: true,
+							// Exclude password here by not including it in the select object
+						},
+					},
 				},
 			});
 			if (!comment) {
@@ -58,7 +69,18 @@ async function dbReadComment({ id, authorID, postID }) {
 					authorID,
 				},
 				include: {
-					author: true,
+					author: {
+						select: {
+							id: true,
+							username: true,
+							email: true,
+							bio: true,
+							profilePic: true,
+							createdAt: true,
+							updatedAt: true,
+							// Exclude password here by not including it in the select object
+						},
+					},
 				},
 				orderBy: { createdAt: 'desc' },
 			});
@@ -78,7 +100,18 @@ async function dbReadComment({ id, authorID, postID }) {
 					postID,
 				},
 				include: {
-					author: true,
+					author: {
+						select: {
+							id: true,
+							username: true,
+							email: true,
+							bio: true,
+							profilePic: true,
+							createdAt: true,
+							updatedAt: true,
+							// Exclude password here by not including it in the select object
+						},
+					},
 				},
 				orderBy: { createdAt: 'desc' },
 			});

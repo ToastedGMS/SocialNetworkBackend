@@ -37,7 +37,18 @@ async function dbReadPost({ id, authorID }) {
 					id: id,
 				},
 				include: {
-					author: true,
+					author: {
+						select: {
+							id: true,
+							username: true,
+							email: true,
+							bio: true,
+							profilePic: true,
+							createdAt: true,
+							updatedAt: true,
+							// Exclude password here by not including it in the select object
+						},
+					},
 				},
 			});
 			if (!post) {
@@ -60,7 +71,18 @@ async function dbReadPost({ id, authorID }) {
 					authorID: authorID,
 				},
 				include: {
-					author: true,
+					author: {
+						select: {
+							id: true,
+							username: true,
+							email: true,
+							bio: true,
+							profilePic: true,
+							createdAt: true,
+							updatedAt: true,
+							// Exclude password here by not including it in the select object
+						},
+					},
 				},
 				orderBy: {
 					createdAt: 'desc', // Order by creation date in descending order
@@ -79,7 +101,18 @@ async function dbReadPost({ id, authorID }) {
 		//get all posts
 		const posts = await prisma.post.findMany({
 			include: {
-				author: true,
+				author: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+						bio: true,
+						profilePic: true,
+						createdAt: true,
+						updatedAt: true,
+						// Exclude password here by not including it in the select object
+					},
+				},
 			},
 			orderBy: {
 				createdAt: 'desc', // Order by creation date in descending order

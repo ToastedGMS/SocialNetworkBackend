@@ -138,7 +138,20 @@ describe('dbReadLikesForPost', () => {
 		await expect(dbReadLikesForPost(input)).resolves.toEqual(mockLikes);
 		expect(prisma.like.findMany).toHaveBeenCalledWith({
 			where: { postID: 1 },
-			include: { author: true },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+						bio: true,
+						profilePic: true,
+						createdAt: true,
+						updatedAt: true,
+						// Exclude password here by not including it in the select object
+					},
+				},
+			},
 		});
 	});
 
@@ -166,7 +179,20 @@ describe('dbReadLikesForComment', () => {
 		await expect(dbReadLikesForComment(input)).resolves.toEqual(mockLikes);
 		expect(prisma.like.findMany).toHaveBeenCalledWith({
 			where: { commentID: 1 },
-			include: { author: true },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+						bio: true,
+						profilePic: true,
+						createdAt: true,
+						updatedAt: true,
+						// Exclude password here by not including it in the select object
+					},
+				},
+			},
 		});
 	});
 

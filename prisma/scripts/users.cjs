@@ -71,6 +71,16 @@ async function dbReadUser({ userInfo }) {
 					},
 				],
 			},
+			select: {
+				id: true,
+				username: true,
+				email: true,
+				bio: true,
+				profilePic: true,
+				createdAt: true,
+				updatedAt: true,
+				// Don't include password in the result
+			},
 		});
 
 		if (!foundUser) {
@@ -119,6 +129,16 @@ async function dbUpdateUser({ userInfo }) {
 				email,
 				bio,
 				profilePic,
+			},
+			select: {
+				id: true,
+				username: true,
+				email: true,
+				bio: true,
+				profilePic: true,
+				createdAt: true,
+				updatedAt: true,
+				// Exclude password here by not including it in the select object
 			},
 		});
 

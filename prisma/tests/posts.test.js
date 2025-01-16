@@ -127,7 +127,20 @@ describe('dbReadPost', () => {
 		await expect(dbReadPost(input)).resolves.toEqual(mockPost);
 		expect(prisma.post.findUnique).toHaveBeenCalledWith({
 			where: { id: 1 },
-			include: { author: true },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+						bio: true,
+						profilePic: true,
+						createdAt: true,
+						updatedAt: true,
+						// Exclude password here by not including it in the select object
+					},
+				},
+			},
 		});
 	});
 
@@ -153,7 +166,20 @@ describe('dbReadPost', () => {
 		await expect(dbReadPost(input)).resolves.toEqual(mockPosts);
 		expect(prisma.post.findMany).toHaveBeenCalledWith({
 			where: { authorID: 1 },
-			include: { author: true },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						email: true,
+						bio: true,
+						profilePic: true,
+						createdAt: true,
+						updatedAt: true,
+						// Exclude password here by not including it in the select object
+					},
+				},
+			},
 			orderBy: { createdAt: 'desc' },
 		});
 	});
