@@ -26,7 +26,7 @@ describe('createLike controller', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		req = { body: {} };
+		req = { body: {}, query: {} };
 		res = {
 			status: jest.fn().mockReturnThis(),
 			json: jest.fn(),
@@ -34,7 +34,7 @@ describe('createLike controller', () => {
 	});
 
 	test('returns a 400 error when required fields are missing', async () => {
-		req.body = {
+		req.query = {
 			// Missing authorID, postID, or commentID
 		};
 
@@ -49,7 +49,7 @@ describe('createLike controller', () => {
 	});
 
 	test('returns a 400 error when user has already liked', async () => {
-		req.body = {
+		req.query = {
 			authorID: 1,
 			postID: 2,
 		};
@@ -64,7 +64,7 @@ describe('createLike controller', () => {
 	});
 
 	test('returns a 500 error for unexpected server errors', async () => {
-		req.body = {
+		req.query = {
 			authorID: 1,
 			postID: 2,
 		};
@@ -86,7 +86,7 @@ describe('createLike controller', () => {
 			commentID: null,
 		};
 
-		req.body = {
+		req.query = {
 			authorID: 1,
 			postID: 2,
 		};
@@ -105,7 +105,7 @@ describe('removeLike controller', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		req = { body: {} };
+		req = { body: {}, query: {} };
 		res = {
 			status: jest.fn().mockReturnThis(),
 			json: jest.fn(),
@@ -113,7 +113,7 @@ describe('removeLike controller', () => {
 	});
 
 	test('returns a 400 error when required fields are missing', async () => {
-		req.body = {
+		req.query = {
 			// Missing authorID, postID, or commentID
 		};
 
@@ -128,7 +128,7 @@ describe('removeLike controller', () => {
 	});
 
 	test('returns a 400 error when like is not found', async () => {
-		req.body = {
+		req.query = {
 			authorID: 1,
 			postID: 2,
 		};
@@ -143,7 +143,7 @@ describe('removeLike controller', () => {
 	});
 
 	test('returns a 500 error for unexpected server errors', async () => {
-		req.body = {
+		req.query = {
 			authorID: 1,
 			postID: 2,
 		};
@@ -159,7 +159,7 @@ describe('removeLike controller', () => {
 
 	test('returns a 200 success message when like is removed successfully', async () => {
 		const message = 'Like removed successfully.';
-		req.body = {
+		req.query = {
 			authorID: 1,
 			postID: 2,
 		};
@@ -178,7 +178,7 @@ describe('readLikesForPost controller', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		req = { params: {} };
+		req = { query: {} };
 		res = {
 			status: jest.fn().mockReturnThis(),
 			json: jest.fn(),
@@ -186,7 +186,7 @@ describe('readLikesForPost controller', () => {
 	});
 
 	test('returns a 400 error for missing postID', async () => {
-		req.params = {};
+		req.query = {};
 
 		const error = 'Missing parameter: Post ID is required for reading likes.';
 		dbReadLikesForPost.mockRejectedValue(new Error(error));
@@ -198,7 +198,7 @@ describe('readLikesForPost controller', () => {
 	});
 
 	test('returns a 500 error for unexpected server errors', async () => {
-		req.params = { postID: 1 };
+		req.query = { postID: 1 };
 
 		const error = 'Unexpected database error';
 		dbReadLikesForPost.mockRejectedValue(new Error(error));
@@ -215,7 +215,7 @@ describe('readLikesForPost controller', () => {
 			{ id: 2, authorID: 2, postID: 1 },
 		];
 
-		req.params = { postID: 1 };
+		req.query = { postID: 1 };
 		dbReadLikesForPost.mockResolvedValue(likes);
 
 		await readLikesForPost(req, res);
@@ -230,7 +230,7 @@ describe('readLikesForComment controller', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		req = { params: {} };
+		req = { query: {} };
 		res = {
 			status: jest.fn().mockReturnThis(),
 			json: jest.fn(),
@@ -238,7 +238,7 @@ describe('readLikesForComment controller', () => {
 	});
 
 	test('returns a 400 error for missing commentID', async () => {
-		req.params = {};
+		req.query = {};
 
 		const error =
 			'Missing parameter: Comment ID is required for reading likes.';
@@ -251,7 +251,7 @@ describe('readLikesForComment controller', () => {
 	});
 
 	test('returns a 500 error for unexpected server errors', async () => {
-		req.params = { commentID: 1 };
+		req.query = { commentID: 1 };
 
 		const error = 'Unexpected database error';
 		dbReadLikesForComment.mockRejectedValue(new Error(error));
@@ -268,7 +268,7 @@ describe('readLikesForComment controller', () => {
 			{ id: 2, authorID: 2, commentID: 1 },
 		];
 
-		req.params = { commentID: 1 };
+		req.query = { commentID: 1 };
 		dbReadLikesForComment.mockResolvedValue(likes);
 
 		await readLikesForComment(req, res);
@@ -283,7 +283,7 @@ describe('readLikesForUser controller', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		req = { params: {} };
+		req = { query: {} };
 		res = {
 			status: jest.fn().mockReturnThis(),
 			json: jest.fn(),
@@ -291,7 +291,7 @@ describe('readLikesForUser controller', () => {
 	});
 
 	test('returns a 400 error for missing authorID', async () => {
-		req.params = {};
+		req.query = {};
 
 		const error = 'Missing parameter: Author ID is required for reading likes.';
 		dbReadLikesForUser.mockRejectedValue(new Error(error));
@@ -303,7 +303,7 @@ describe('readLikesForUser controller', () => {
 	});
 
 	test('returns a 500 error for unexpected server errors', async () => {
-		req.params = { authorID: 1 };
+		req.query = { authorID: 1 };
 
 		const error = 'Unexpected database error';
 		dbReadLikesForUser.mockRejectedValue(new Error(error));
@@ -320,7 +320,7 @@ describe('readLikesForUser controller', () => {
 			{ id: 2, authorID: 1, commentID: 2 },
 		];
 
-		req.params = { authorID: 1 };
+		req.query = { authorID: 1 };
 		dbReadLikesForUser.mockResolvedValue(likes);
 
 		await readLikesForUser(req, res);
