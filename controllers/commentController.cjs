@@ -25,7 +25,11 @@ async function createComment(req, res) {
 async function readComment(req, res) {
 	try {
 		const { id, authorID, postID } = req.query;
-		const comments = await dbReadComment({ id, authorID, postID });
+		const comments = await dbReadComment({
+			id: parseInt(id, 10),
+			authorID: parseInt(authorID, 10),
+			postID: parseInt(postID, 10),
+		});
 		if (!comments || comments.length === 0) {
 			// Handle case where no comment is found
 			throw new Error('Comment not found');
@@ -43,7 +47,9 @@ async function readComment(req, res) {
 async function deleteComment(req, res) {
 	try {
 		const { id } = req.params;
-		const result = await dbDeleteComment({ id });
+		const result = await dbDeleteComment({
+			id: parseInt(id, 10),
+		});
 		return res.status(200).json(result);
 	} catch (error) {
 		console.error('Error deleting comment:', error.message);
@@ -62,7 +68,10 @@ async function updateComment(req, res) {
 		if (content.length > 1000) {
 			throw new Error('Content exceeds the maximum length of 1000 characters.');
 		}
-		const updatedComment = await dbUpdateComment({ id, content });
+		const updatedComment = await dbUpdateComment({
+			id: parseInt(id, 10),
+			content,
+		});
 		return res.status(200).json(updatedComment);
 	} catch (error) {
 		console.error('Error updating comment:', error.message);

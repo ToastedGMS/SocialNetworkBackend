@@ -34,7 +34,9 @@ async function readUser(req, res) {
 		const { id } = req.params;
 		const { email, username } = req.body;
 
-		const user = await dbReadUser({ userInfo: { id, username, email } });
+		const user = await dbReadUser({
+			userInfo: { id: parseInt(id, 10), username, email },
+		});
 
 		return res.status(200).json(user);
 	} catch (error) {
@@ -56,7 +58,7 @@ async function updateUser(req, res) {
 
 		const { username, email, bio, profilePic } = req.body;
 		const updatedUser = await dbUpdateUser({
-			userInfo: { id, username, email, bio, profilePic },
+			userInfo: { id: parseInt(id, 10), username, email, bio, profilePic },
 		});
 		if (updatedUser === 'No values to update.') {
 			return res.status(200).json({ message: 'No values to update.' });
@@ -79,7 +81,9 @@ async function deleteUser(req, res) {
 		const { id } = req.params;
 
 		const { password } = req.body;
-		const deletionMessage = await dbDeleteUser({ userInfo: { id, password } });
+		const deletionMessage = await dbDeleteUser({
+			userInfo: { id: parseInt(id, 10), password },
+		});
 
 		return res.status(200).json({ message: deletionMessage });
 	} catch (error) {
