@@ -37,6 +37,7 @@ describe('createLike controller', () => {
 		req.query = {
 			// Missing authorID, postID, or commentID
 		};
+		req.body = {};
 
 		const error =
 			'Missing parameters: authorID, postID, or commentID must be provided.';
@@ -50,9 +51,9 @@ describe('createLike controller', () => {
 
 	test('returns a 400 error when user has already liked', async () => {
 		req.query = {
-			authorID: 1,
 			postID: 2,
 		};
+		req.body = { authorID: 1 };
 
 		const error = 'You have already liked this post.';
 		dbCreateLike.mockRejectedValue(new Error(error));
@@ -65,9 +66,9 @@ describe('createLike controller', () => {
 
 	test('returns a 500 error for unexpected server errors', async () => {
 		req.query = {
-			authorID: 1,
 			postID: 2,
 		};
+		req.body = { authorID: 1 };
 
 		const error = 'Unexpected database error';
 		dbCreateLike.mockRejectedValue(new Error(error));
@@ -87,9 +88,9 @@ describe('createLike controller', () => {
 		};
 
 		req.query = {
-			authorID: 1,
 			postID: 2,
 		};
+		req.body = { authorID: 1 };
 
 		dbCreateLike.mockResolvedValue(like);
 
@@ -117,6 +118,8 @@ describe('removeLike controller', () => {
 			// Missing authorID, postID, or commentID
 		};
 
+		req.body = {};
+
 		const error =
 			'Missing parameters: authorID, postID, or commentID must be provided.';
 		dbRemoveLike.mockRejectedValue(new Error(error));
@@ -129,9 +132,9 @@ describe('removeLike controller', () => {
 
 	test('returns a 400 error when like is not found', async () => {
 		req.query = {
-			authorID: 1,
 			postID: 2,
 		};
+		req.body = { authorID: 1 };
 
 		const error = 'Like not found for the provided post or comment.';
 		dbRemoveLike.mockRejectedValue(new Error(error));
@@ -144,9 +147,9 @@ describe('removeLike controller', () => {
 
 	test('returns a 500 error for unexpected server errors', async () => {
 		req.query = {
-			authorID: 1,
 			postID: 2,
 		};
+		req.body = { authorID: 1 };
 
 		const error = 'Unexpected database error';
 		dbRemoveLike.mockRejectedValue(new Error(error));
@@ -160,9 +163,9 @@ describe('removeLike controller', () => {
 	test('returns a 200 success message when like is removed successfully', async () => {
 		const message = 'Like removed successfully.';
 		req.query = {
-			authorID: 1,
 			postID: 2,
 		};
+		req.body = { authorID: 1 };
 
 		dbRemoveLike.mockResolvedValue(message);
 

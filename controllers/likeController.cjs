@@ -8,7 +8,8 @@ const {
 
 async function createLike(req, res) {
 	try {
-		const { authorID, postID, commentID } = req.query;
+		const { authorID } = req.body;
+		const { postID, commentID } = req.query;
 		const like = await dbCreateLike({
 			authorID: parseInt(authorID, 10),
 			postID: parseInt(postID, 10),
@@ -29,7 +30,8 @@ async function createLike(req, res) {
 
 async function removeLike(req, res) {
 	try {
-		const { authorID, postID, commentID } = req.query;
+		const { authorID } = req.body;
+		const { postID, commentID } = req.query;
 		const message = await dbRemoveLike({
 			authorID: parseInt(authorID, 10),
 			postID: parseInt(postID, 10),

@@ -11,8 +11,8 @@ const {
 
 router.post('/new', createLike);
 router.delete('/remove', removeLike);
-router.get('/post/:postID', readLikesForPost);
-router.get('/comment/:commentID', readLikesForComment);
-router.get('/user/:authorID', readLikesForUser);
+router.get('/post', readLikesForPost);
+router.get('/comment', readLikesForComment);
+router.get('/user', readLikesForUser);
 
 module.exports = router;
