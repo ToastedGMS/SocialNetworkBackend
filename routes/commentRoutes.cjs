@@ -7,10 +7,11 @@ const {
 	deleteComment,
 	updateComment,
 } = require('../controllers/commentController.cjs');
+const { verifyToken } = require('../auth/auth.cjs');
 
-router.post('/new', createComment);
+router.post('/new', verifyToken, createComment);
 router.get('/read', readComment);
-router.put('/update/:id', updateComment);
-router.delete('/delete/:id', deleteComment);
+router.put('/update/:id', verifyToken, updateComment);
+router.delete('/delete/:id', verifyToken, deleteComment);
 
 module.exports = router;

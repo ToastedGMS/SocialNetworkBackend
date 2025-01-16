@@ -8,9 +8,10 @@ const {
 	readLikesForComment,
 	readLikesForUser,
 } = require('../controllers/likeController.cjs');
+const { verifyToken } = require('../auth/auth.cjs');
 
-router.post('/new', createLike);
-router.delete('/remove', removeLike);
+router.post('/new', verifyToken, createLike);
+router.delete('/remove', verifyToken, removeLike);
 router.get('/post', readLikesForPost);
 router.get('/comment', readLikesForComment);
 router.get('/user', readLikesForUser);
