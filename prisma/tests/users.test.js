@@ -5,6 +5,7 @@ const {
 	dbReadUser,
 	dbUpdateUser,
 	dbDeleteUser,
+	dbCheckCredentials,
 } = require('../scripts/users.cjs');
 
 jest.mock('../prismaClient/prismaClient.cjs', () => ({
@@ -452,6 +453,101 @@ describe('dbDeleteUser', () => {
 
 		await expect(dbDeleteUser(query)).rejects.toThrow(
 			'An unexpected error occurred. Details: Unexpected Error'
+		);
+	});
+});
+describe('dbCheckCredentials', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	test('should throw an error if required fields are missing', async () => {
+		const invalidInputs = [
+			{ userInfo: { identification: 'test@example.com' } },
+			{ userInfo: { password: 'password123' } },
+			{ userInfo: {} },
+		];
+
+		for (const input of invalidInputs) {
+			await expect(dbCheckCredentials(input)).rejects.toThrow(
+				'One or more missing parameters for checking credentials'
+			);
+		}
+	});
+
+	test('should throw an error if user is not found', async () => {
+		prisma.user.findFirst.mockResolvedValue(null);
+
+		const userInfo = {
+			identification: 'test@example.com',
+			password: 'password123',
+		};
+
+		await expect(dbCheckCredentials({ userInfo })).rejects.toThrow(
+			'Unable to find matching credentials, check username and password and try again.'
+		);
+	});
+
+	test('should throw an error if password does not match', async () => {
+		prisma.user.findFirst.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			password: 'hashedPassword',
+		});
+
+		bcrypt.compare.mockResolvedValue(false);
+
+		const userInfo = {
+			identification: 'test@example.com',
+			password: 'password123',
+		};
+
+		await expect(dbCheckCredentials({ userInfo })).rejects.toThrow(
+			'Unable to find matching credentials, check username and password and try again.'
+		);
+	});
+
+	test('should return user details if credentials are correct', async () => {
+		prisma.user.findFirst.mockResolvedValue({
+			id: 1,
+			username: 'testuser',
+			email: 'test@example.com',
+			password: 'hashedPassword',
+			bio: 'Test bio',
+			profilePic: 'profile.jpg',
+		});
+
+		bcrypt.compare.mockResolvedValue(true);
+
+		const userInfo = {
+			identification: 'testuser',
+			password: 'password123',
+		};
+
+		const result = await dbCheckCredentials({ userInfo });
+
+		expect(result).toEqual({
+			id: 1,
+			email: 'test@example.com',
+			username: 'testuser',
+			bio: 'Test bio',
+			profilePic: 'profile.jpg',
+		});
+	});
+
+	test('should throw an error for unexpected database errors', async () => {
+		prisma.user.findFirst.mockRejectedValue(
+			new Error('Unexpected database error')
+		);
+
+		const userInfo = {
+			identification: 'test@example.com',
+			password: 'password123',
+		};
+
+		await expect(dbCheckCredentials({ userInfo })).rejects.toThrow(
+			'An unexpected error occurred. Details: Unexpected database error'
 		);
 	});
 });

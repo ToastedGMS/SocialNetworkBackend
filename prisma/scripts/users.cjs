@@ -174,4 +174,52 @@ async function dbDeleteUser({ userInfo }) {
 	}
 }
 
-module.exports = { dbCreateUser, dbReadUser, dbUpdateUser, dbDeleteUser };
+async function dbCheckCredentials({ userInfo }) {
+	const { identification, password } = userInfo;
+
+	if (!identification || !password) {
+		throw new Error('One or more missing parameters for checking credentials');
+	}
+
+	const stringType = identification.includes('@') ? 'email' : 'username';
+
+	try {
+		const user = await prisma.user.findFirst({
+			where: {
+				[stringType]: identification,
+			},
+		});
+
+		if (!user) {
+			throw new Error(
+				'Unable to find matching credentials, check username and password and try again.'
+			);
+		}
+
+		const passwordMatch = await bcrypt.compare(password, user.password);
+		if (!passwordMatch) {
+			throw new Error(
+				'Unable to find matching credentials, check username and password and try again.'
+			);
+		}
+
+		return {
+			id: user.id,
+			email: user.email,
+			username: user.username,
+			bio: user.bio,
+			profilePic: user.profilePic,
+		};
+	} catch (error) {
+		console.error('Unexpected database error:', error);
+		throw new Error(`An unexpected error occurred. Details: ${error.message}`);
+	}
+}
+
+module.exports = {
+	dbCreateUser,
+	dbReadUser,
+	dbUpdateUser,
+	dbDeleteUser,
+	dbCheckCredentials,
+};
