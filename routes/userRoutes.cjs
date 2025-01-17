@@ -6,6 +6,7 @@ const {
 	readUser,
 	updateUser,
 	deleteUser,
+	searchUser,
 } = require('../controllers/userController.cjs');
 const { checkCredentials, verifyToken } = require('../auth/auth.cjs');
 
@@ -18,5 +19,6 @@ router.get('/login', async (req, res) => {
 
 	await checkCredentials(identification, password, res);
 });
+router.get('/search', searchUser);
 
 module.exports = router;

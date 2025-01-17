@@ -3,6 +3,7 @@ const {
 	dbReadUser,
 	dbUpdateUser,
 	dbDeleteUser,
+	dbSearchUser,
 } = require('../prisma/scripts/users.cjs');
 
 async function createUser(req, res) {
@@ -98,4 +99,31 @@ async function deleteUser(req, res) {
 	}
 }
 
-module.exports = { createUser, readUser, updateUser, deleteUser };
+async function searchUser(req, res) {
+	try {
+		const { searchQuery } = req.query;
+
+		if (!searchQuery || searchQuery.trim() === '') {
+			return res.status(400).json({ error: 'Search query cannot be empty' });
+		}
+
+		const result = await dbSearchUser(searchQuery.trim());
+
+		return res.status(200).json({ users: result });
+	} catch (error) {
+		console.error('Error searching user:', error);
+		if (error.message.includes('empty query provided')) {
+			return res.status(400).json({ error: error.message });
+		}
+
+		if (error.message.includes('No users found')) {
+			return res.status(404).json({ error: error.message });
+		}
+
+		return res
+			.status(500)
+			.json({ error: 'An error occurred while searching users' });
+	}
+}
+
+module.exports = { createUser, readUser, updateUser, deleteUser, searchUser };

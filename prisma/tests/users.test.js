@@ -6,6 +6,7 @@ const {
 	dbUpdateUser,
 	dbDeleteUser,
 	dbCheckCredentials,
+	dbSearchUser,
 } = require('../scripts/users.cjs');
 
 jest.mock('../prismaClient/prismaClient.cjs', () => ({
@@ -14,6 +15,8 @@ jest.mock('../prismaClient/prismaClient.cjs', () => ({
 		findFirst: jest.fn(),
 		update: jest.fn(),
 		delete: jest.fn(),
+		findMany: jest.fn(),
+		search: jest.fn(),
 	},
 }));
 
@@ -549,5 +552,97 @@ describe('dbCheckCredentials', () => {
 		await expect(dbCheckCredentials({ userInfo })).rejects.toThrow(
 			'An unexpected error occurred. Details: Unexpected database error'
 		);
+	});
+});
+
+describe('dbSearchUser', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+	test('should throw an error if no search query is provided', async () => {
+		const invalidQueries = [null, '', undefined];
+
+		for (const query of invalidQueries) {
+			await expect(dbSearchUser(query)).rejects.toThrow(
+				'No search query or empty query provided'
+			);
+		}
+	});
+
+	test('should throw an error for unexpected database error', async () => {
+		prisma.user.findMany.mockRejectedValue(
+			new Error('Unexpected database error')
+		);
+
+		await expect(dbSearchUser('testUser')).rejects.toThrow(
+			'An unexpected error occurred. Details: Unexpected database error'
+		);
+	});
+
+	test('should return a message if no result is found', async () => {
+		prisma.user.findMany.mockResolvedValue([]);
+
+		await expect(dbSearchUser('inexistentUser')).rejects.toThrow(
+			'No users found'
+		);
+	});
+	test('should return matching users when a valid search query is provided', async () => {
+		const mockUsers = [
+			{ id: 1, username: 'testUser1', email: 'test1@example.com' },
+			{ id: 2, username: 'testUser2', email: 'test2@example.com' },
+		];
+
+		prisma.user.findMany.mockResolvedValue(mockUsers);
+
+		const result = await dbSearchUser('testUser');
+
+		expect(result).toEqual(mockUsers);
+		expect(prisma.user.findMany).toHaveBeenCalledWith({
+			where: {
+				username: {
+					search: 'testUser',
+					mode: 'insensitive',
+				},
+			},
+		});
+	});
+	test('should return matching users regardless of case sensitivity', async () => {
+		const mockUsers = [
+			{ id: 1, username: 'TestUser', email: 'test@example.com' },
+		];
+
+		prisma.user.findMany.mockResolvedValue(mockUsers);
+
+		const result = await dbSearchUser('testuser');
+
+		expect(result).toEqual(mockUsers);
+		expect(prisma.user.findMany).toHaveBeenCalledWith({
+			where: {
+				username: {
+					search: 'testuser',
+					mode: 'insensitive',
+				},
+			},
+		});
+	});
+	test('should return users whose usernames partially match the search query', async () => {
+		const mockUsers = [
+			{ id: 1, username: 'testUser123', email: 'test1@example.com' },
+			{ id: 2, username: '123testUser', email: 'test2@example.com' },
+		];
+
+		prisma.user.findMany.mockResolvedValue(mockUsers);
+
+		const result = await dbSearchUser('testUser');
+
+		expect(result).toEqual(mockUsers);
+		expect(prisma.user.findMany).toHaveBeenCalledWith({
+			where: {
+				username: {
+					search: 'testUser',
+					mode: 'insensitive',
+				},
+			},
+		});
 	});
 });

@@ -242,10 +242,42 @@ async function dbCheckCredentials({ userInfo }) {
 	}
 }
 
+async function dbSearchUser(searchQuery) {
+	if (!searchQuery || searchQuery === undefined || searchQuery === '') {
+		throw new Error('No search query or empty query provided');
+	}
+	try {
+		const result = await prisma.user.findMany({
+			where: {
+				username: {
+					contains: searchQuery,
+					mode: 'insensitive',
+				},
+			},
+			select: {
+				id: true,
+				username: true,
+				email: true,
+				profilePic: true,
+			},
+		});
+
+		if (result.length === 0) {
+			throw new Error('No users found');
+		}
+
+		return result;
+	} catch (error) {
+		console.error('Unexpected database error:', error);
+		throw new Error(`An unexpected error occurred. Details: ${error.message}`);
+	}
+}
+
 module.exports = {
 	dbCreateUser,
 	dbReadUser,
 	dbUpdateUser,
 	dbDeleteUser,
 	dbCheckCredentials,
+	dbSearchUser,
 };

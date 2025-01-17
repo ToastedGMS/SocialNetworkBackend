@@ -3,12 +3,14 @@ const {
 	readUser,
 	updateUser,
 	deleteUser,
+	searchUser,
 } = require('../userController.cjs');
 const {
 	dbCreateUser,
 	dbReadUser,
 	dbUpdateUser,
 	dbDeleteUser,
+	dbSearchUser,
 } = require('../../prisma/scripts/users.cjs');
 
 const prisma = require('../../prisma/prismaClient/prismaClient.cjs');
@@ -24,6 +26,7 @@ jest.mock('../../prisma/scripts/users.cjs', () => {
 		dbReadUser: jest.fn(),
 		dbUpdateUser: jest.fn(),
 		dbDeleteUser: jest.fn(),
+		dbSearchUser: jest.fn(),
 	};
 });
 
@@ -341,5 +344,60 @@ describe('deleteUser controller', () => {
 
 		expect(res.status).toHaveBeenCalledWith(200);
 		expect(res.json).toHaveBeenCalledWith({ message: message });
+	});
+});
+
+describe('searchUser', () => {
+	let req, res;
+
+	beforeEach(() => {
+		req = { query: {} };
+		res = {
+			status: jest.fn().mockReturnThis(),
+			json: jest.fn(),
+		};
+	});
+
+	test('should return 200 and a list of users for a valid query', async () => {
+		req.query.searchQuery = 'testUser';
+		const mockUsers = [{ id: 1, username: 'testUser' }];
+		dbSearchUser.mockResolvedValue(mockUsers);
+
+		await searchUser(req, res);
+
+		expect(res.status).toHaveBeenCalledWith(200);
+		expect(res.json).toHaveBeenCalledWith({ users: mockUsers });
+	});
+
+	test('should return 404 if no users are found', async () => {
+		req.query.searchQuery = 'nonexistentUser';
+		dbSearchUser.mockRejectedValue(new Error('No users found'));
+
+		await searchUser(req, res);
+
+		expect(res.status).toHaveBeenCalledWith(404);
+		expect(res.json).toHaveBeenCalledWith({ error: 'No users found' });
+	});
+
+	test('should return 400 for an empty query', async () => {
+		req.query.searchQuery = '';
+		await searchUser(req, res);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(res.json).toHaveBeenCalledWith({
+			error: 'Search query cannot be empty',
+		});
+	});
+
+	test('should return 500 for a database error', async () => {
+		req.query.searchQuery = 'testUser';
+		dbSearchUser.mockRejectedValue(new Error('Unexpected database error'));
+
+		await searchUser(req, res);
+
+		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.json).toHaveBeenCalledWith({
+			error: 'An error occurred while searching users',
+		});
 	});
 });
