@@ -17,6 +17,7 @@ jest.mock('../prismaClient/prismaClient.cjs', () => ({
 		delete: jest.fn(),
 		findMany: jest.fn(),
 		search: jest.fn(),
+		contains: jest.fn(),
 	},
 }));
 
@@ -600,9 +601,15 @@ describe('dbSearchUser', () => {
 		expect(prisma.user.findMany).toHaveBeenCalledWith({
 			where: {
 				username: {
-					search: 'testUser',
+					contains: 'testUser',
 					mode: 'insensitive',
 				},
+			},
+			select: {
+				id: true,
+				username: true,
+				email: true,
+				profilePic: true,
 			},
 		});
 	});
@@ -619,9 +626,15 @@ describe('dbSearchUser', () => {
 		expect(prisma.user.findMany).toHaveBeenCalledWith({
 			where: {
 				username: {
-					search: 'testuser',
+					contains: 'testuser',
 					mode: 'insensitive',
 				},
+			},
+			select: {
+				id: true,
+				username: true,
+				email: true,
+				profilePic: true,
 			},
 		});
 	});
@@ -639,9 +652,15 @@ describe('dbSearchUser', () => {
 		expect(prisma.user.findMany).toHaveBeenCalledWith({
 			where: {
 				username: {
-					search: 'testUser',
+					contains: 'testUser',
 					mode: 'insensitive',
 				},
+			},
+			select: {
+				id: true,
+				username: true,
+				email: true,
+				profilePic: true,
 			},
 		});
 	});
