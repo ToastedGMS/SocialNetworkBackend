@@ -221,7 +221,7 @@ describe('generateFeed', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		req = { body: {} };
+		req = { body: {}, params: {} };
 		res = {
 			status: jest.fn().mockReturnThis(),
 			json: jest.fn(),
@@ -229,7 +229,7 @@ describe('generateFeed', () => {
 	});
 
 	test('returns a sorted feed with posts from friends', async () => {
-		req.body = { id: 1 };
+		req.params = { id: 1 };
 
 		dbGetFriendships.mockResolvedValue([
 			{ senderId: 1, receiverId: 2 },
@@ -276,7 +276,7 @@ describe('generateFeed', () => {
 	});
 
 	test('returns a 404 error if no friends are found', async () => {
-		req.body = { id: 1 };
+		req.params = { id: 1 };
 		dbGetFriendships.mockResolvedValue([]);
 
 		await generateFeed(req, res);
@@ -286,7 +286,7 @@ describe('generateFeed', () => {
 	});
 
 	test('returns a 500 error if fetching friendships fails', async () => {
-		req.body = { id: 1 };
+		req.params = { id: 1 };
 		dbGetFriendships.mockRejectedValue(new Error('Database error'));
 
 		await generateFeed(req, res);
@@ -298,7 +298,7 @@ describe('generateFeed', () => {
 	});
 
 	test('returns an empty array if fetching posts for a friend fails', async () => {
-		req.body = { id: 1 };
+		req.params = { id: 1 };
 
 		dbGetFriendships.mockResolvedValue([{ senderId: 1, receiverId: 2 }]);
 		dbReadPost.mockRejectedValue(new Error('Post fetch error'));

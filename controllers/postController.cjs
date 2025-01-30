@@ -73,10 +73,9 @@ async function updatePost(req, res) {
 }
 
 async function generateFeed(req, res) {
-	const { id } = req.body;
-
+	const { id } = req.params;
 	try {
-		let friends = await dbGetFriendships(id);
+		let friends = await dbGetFriendships(parseInt(id, 10));
 
 		if (!friends || friends.length === 0) {
 			console.log('No friends found');
@@ -84,9 +83,13 @@ async function generateFeed(req, res) {
 		}
 
 		const IDs = friends
-			.filter((item) => item.receiverId !== id || item.senderId !== id)
+			.filter(
+				(item) =>
+					item.receiverId !== parseInt(id, 10) ||
+					item.senderId !== parseInt(id, 10)
+			)
 			.map((item) =>
-				item.receiverId !== id ? item.receiverId : item.senderId
+				item.receiverId !== parseInt(id, 10) ? item.receiverId : item.senderId
 			);
 
 		const feedPromises = IDs.map(async (friendId) => {
