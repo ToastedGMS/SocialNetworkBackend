@@ -3,6 +3,7 @@ const {
 	readPost,
 	deletePost,
 	updatePost,
+	generateFeed,
 } = require('../postController.cjs');
 const {
 	dbCreatePost,
@@ -10,6 +11,8 @@ const {
 	dbDeletePost,
 	dbUpdatePost,
 } = require('../../prisma/scripts/posts.cjs');
+const { dbGetFriendships } = require('../../prisma/scripts/friendship.cjs');
+jest.mock('../../prisma/scripts/friendship.cjs');
 
 jest.mock('../../prisma/scripts/posts.cjs');
 
@@ -210,5 +213,99 @@ describe('Post Controller', () => {
 			expect(res.status).toHaveBeenCalledWith(400);
 			expect(res.json).toHaveBeenCalledWith({ error: error });
 		});
+	});
+});
+
+describe('generateFeed', () => {
+	let req, res;
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		req = { body: {} };
+		res = {
+			status: jest.fn().mockReturnThis(),
+			json: jest.fn(),
+		};
+	});
+
+	test('returns a sorted feed with posts from friends', async () => {
+		req.body = { id: 1 };
+
+		dbGetFriendships.mockResolvedValue([
+			{ senderId: 1, receiverId: 2 },
+			{ senderId: 1, receiverId: 3 },
+		]);
+
+		dbReadPost.mockImplementation(async ({ authorID }) => {
+			if (authorID === 2) {
+				return [
+					{
+						id: 101,
+						content: 'Post from user 2',
+						createdAt: '2025-01-29T12:00:00Z',
+					},
+				];
+			}
+			if (authorID === 3) {
+				return [
+					{
+						id: 102,
+						content: 'Post from user 3',
+						createdAt: '2025-01-30T12:00:00Z',
+					},
+				];
+			}
+			return [];
+		});
+
+		await generateFeed(req, res);
+
+		expect(res.status).not.toHaveBeenCalledWith(500);
+		expect(res.json).toHaveBeenCalledWith([
+			{
+				id: 102,
+				content: 'Post from user 3',
+				createdAt: '2025-01-30T12:00:00Z',
+			},
+			{
+				id: 101,
+				content: 'Post from user 2',
+				createdAt: '2025-01-29T12:00:00Z',
+			},
+		]);
+	});
+
+	test('returns a 404 error if no friends are found', async () => {
+		req.body = { id: 1 };
+		dbGetFriendships.mockResolvedValue([]);
+
+		await generateFeed(req, res);
+
+		expect(res.status).toHaveBeenCalledWith(404);
+		expect(res.json).toHaveBeenCalledWith({ error: 'No friends found' });
+	});
+
+	test('returns a 500 error if fetching friendships fails', async () => {
+		req.body = { id: 1 };
+		dbGetFriendships.mockRejectedValue(new Error('Database error'));
+
+		await generateFeed(req, res);
+
+		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.json).toHaveBeenCalledWith({
+			error: 'An error occurred while fetching data',
+		});
+	});
+
+	test('returns an empty array if fetching posts for a friend fails', async () => {
+		req.body = { id: 1 };
+
+		dbGetFriendships.mockResolvedValue([{ senderId: 1, receiverId: 2 }]);
+		dbReadPost.mockRejectedValue(new Error('Post fetch error'));
+
+		await generateFeed(req, res);
+
+		expect(res.status).not.toHaveBeenCalledWith(500);
+		expect(res.json).toHaveBeenCalledWith([]);
 	});
 });

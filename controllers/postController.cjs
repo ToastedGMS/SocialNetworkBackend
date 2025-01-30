@@ -1,3 +1,4 @@
+const { dbGetFriendships } = require('../prisma/scripts/friendship.cjs');
 const {
 	dbCreatePost,
 	dbReadPost,
@@ -71,4 +72,44 @@ async function updatePost(req, res) {
 	}
 }
 
-module.exports = { createPost, readPost, deletePost, updatePost };
+async function generateFeed(req, res) {
+	const { id } = req.body;
+
+	try {
+		let friends = await dbGetFriendships(id);
+
+		if (!friends || friends.length === 0) {
+			console.log('No friends found');
+			return res.status(404).json({ error: 'No friends found' });
+		}
+
+		const IDs = friends
+			.filter((item) => item.receiverId !== id || item.senderId !== id)
+			.map((item) =>
+				item.receiverId !== id ? item.receiverId : item.senderId
+			);
+
+		const feedPromises = IDs.map(async (friendId) => {
+			try {
+				const posts = await dbReadPost({ authorID: friendId });
+				return posts;
+			} catch (error) {
+				console.error(`Error fetching posts for user ${friendId}:`, error);
+				return []; // Return an empty array in case of error
+			}
+		});
+
+		const feed = await Promise.all(feedPromises);
+
+		return res.json(
+			feed.flat().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+		);
+	} catch (error) {
+		console.error('Error fetching friendships or posts:', error);
+		return res
+			.status(500)
+			.json({ error: 'An error occurred while fetching data' });
+	}
+}
+
+module.exports = { createPost, readPost, deletePost, updatePost, generateFeed };

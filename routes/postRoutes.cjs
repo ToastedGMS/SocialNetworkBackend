@@ -6,11 +6,13 @@ const {
 	readPost,
 	deletePost,
 	updatePost,
+	generateFeed,
 } = require('../controllers/postController.cjs');
 const { verifyToken } = require('../auth/auth.cjs');
 
 router.post('/new', verifyToken, createPost);
 router.get('/read/:id', readPost);
+router.get('/feed', generateFeed);
 router.put('/update/:id', verifyToken, updatePost);
 router.delete('/delete/:id', verifyToken, deletePost);
 
