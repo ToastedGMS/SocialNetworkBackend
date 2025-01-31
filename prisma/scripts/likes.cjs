@@ -5,12 +5,22 @@ async function dbCreateLike({ authorID, postID, commentID }) {
 		throw new Error('Missing parameters for like creation.');
 	}
 
-	const existingLike = await prisma.like.findFirst({
-		where: {
-			authorID,
-			OR: [{ postID }, { commentID }],
-		},
-	});
+	let existingLike;
+	if (postID) {
+		existingLike = await prisma.like.findFirst({
+			where: {
+				authorID,
+				postID: postID,
+			},
+		});
+	} else if (commentID) {
+		existingLike = await prisma.like.findFirst({
+			where: {
+				authorID,
+				commentID: commentID,
+			},
+		});
+	}
 
 	if (existingLike) {
 		throw new Error('You have already liked this post or comment.');
