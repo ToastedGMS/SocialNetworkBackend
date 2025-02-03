@@ -11,7 +11,7 @@ const {
 const { verifyToken } = require('../auth/auth.cjs');
 
 router.post('/new', verifyToken, createPost);
-router.get('/read/:id', readPost);
+router.get('/read/', readPost);
 router.get('/feed/:id', generateFeed);
 router.put('/update/:id', verifyToken, updatePost);
 router.delete('/delete/:id', verifyToken, deletePost);
