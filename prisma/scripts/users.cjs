@@ -7,7 +7,7 @@ async function dbCreateUser({ userInfo }) {
 		email,
 		password,
 		bio = '',
-		profilePic = 'default-profile-image.png',
+		profilePic = '/default-profile-image.png',
 	} = userInfo;
 
 	if (!username || !email || !password) {
