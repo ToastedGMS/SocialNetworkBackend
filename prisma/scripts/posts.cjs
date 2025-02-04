@@ -30,12 +30,10 @@ async function dbCreatePost({ authorID, content }) {
 
 async function dbReadPost({ id, authorID }) {
 	if (id) {
-		//get post by post ID (also return author info)
+		// Get post by post ID (also return author info and counts)
 		try {
 			const post = await prisma.post.findUnique({
-				where: {
-					id: id,
-				},
+				where: { id: id },
 				include: {
 					author: {
 						select: {
@@ -46,7 +44,13 @@ async function dbReadPost({ id, authorID }) {
 							profilePic: true,
 							createdAt: true,
 							updatedAt: true,
-							// Exclude password here by not including it in the select object
+						},
+					},
+					_count: {
+						// Include count of comments and likes
+						select: {
+							comments: true,
+							likes: true,
 						},
 					},
 				},
@@ -54,7 +58,13 @@ async function dbReadPost({ id, authorID }) {
 			if (!post) {
 				throw new Error(`Post with ID ${id} not found.`);
 			}
-			return post;
+
+			// Add the counts to the response object
+			return {
+				...post,
+				commentCount: post._count.comments,
+				likeCount: post._count.likes,
+			};
 		} catch (error) {
 			console.error('Unexpected database error:', error);
 			throw new Error(
@@ -64,12 +74,10 @@ async function dbReadPost({ id, authorID }) {
 	}
 
 	if (authorID) {
-		////get all posts by a specific author using their ID (also return author info)
+		// Get all posts by a specific author
 		try {
 			const posts = await prisma.post.findMany({
-				where: {
-					authorID: authorID,
-				},
+				where: { authorID: authorID },
 				include: {
 					author: {
 						select: {
@@ -80,15 +88,24 @@ async function dbReadPost({ id, authorID }) {
 							profilePic: true,
 							createdAt: true,
 							updatedAt: true,
-							// Exclude password here by not including it in the select object
+						},
+					},
+					_count: {
+						select: {
+							comments: true,
+							likes: true,
 						},
 					},
 				},
-				orderBy: {
-					createdAt: 'desc', // Order by creation date in descending order
-				},
+				orderBy: { createdAt: 'desc' },
 			});
-			return posts;
+
+			// Add the counts to each post in the response array
+			return posts.map((post) => ({
+				...post,
+				commentCount: post._count.comments,
+				likeCount: post._count.likes,
+			}));
 		} catch (error) {
 			console.error('Unexpected database error:', error);
 			throw new Error(
@@ -98,7 +115,7 @@ async function dbReadPost({ id, authorID }) {
 	}
 
 	try {
-		//get all posts
+		// Get all posts
 		const posts = await prisma.post.findMany({
 			include: {
 				author: {
@@ -110,15 +127,24 @@ async function dbReadPost({ id, authorID }) {
 						profilePic: true,
 						createdAt: true,
 						updatedAt: true,
-						// Exclude password here by not including it in the select object
+					},
+				},
+				_count: {
+					select: {
+						comments: true,
+						likes: true,
 					},
 				},
 			},
-			orderBy: {
-				createdAt: 'desc', // Order by creation date in descending order
-			},
+			orderBy: { createdAt: 'desc' },
 		});
-		return posts;
+
+		// Add the counts to each post in the response array
+		return posts.map((post) => ({
+			...post,
+			commentCount: post._count.comments,
+			likeCount: post._count.likes,
+		}));
 	} catch (error) {
 		console.error('Unexpected database error:', error);
 		throw new Error(`An unexpected error occurred. Details: ${error.message}`);
