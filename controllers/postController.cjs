@@ -82,15 +82,19 @@ async function generateFeed(req, res) {
 			return res.status(404).json({ error: 'No friends found' });
 		}
 
-		const IDs = friends
-			.filter(
-				(item) =>
-					item.receiverId !== parseInt(id, 10) ||
-					item.senderId !== parseInt(id, 10)
-			)
-			.map((item) =>
-				item.receiverId !== parseInt(id, 10) ? item.receiverId : item.senderId
-			);
+		// Include the user’s own ID in the list of IDs to fetch posts for
+		const IDs = [
+			parseInt(id, 10),
+			...friends
+				.filter(
+					(item) =>
+						item.receiverId !== parseInt(id, 10) ||
+						item.senderId !== parseInt(id, 10)
+				)
+				.map((item) =>
+					item.receiverId !== parseInt(id, 10) ? item.receiverId : item.senderId
+				),
+		];
 
 		const feedPromises = IDs.map(async (friendId) => {
 			try {
@@ -104,6 +108,7 @@ async function generateFeed(req, res) {
 
 		const feed = await Promise.all(feedPromises);
 
+		// Return the posts sorted by date (newest first)
 		return res.json(
 			feed.flat().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 		);
