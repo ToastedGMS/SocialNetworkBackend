@@ -30,7 +30,7 @@ async function createFriendship(req, res) {
 
 async function getFriendshipStatus(req, res) {
 	try {
-		const { senderId, receiverId } = req.body;
+		const { senderId, receiverId } = req.query;
 
 		if (!senderId || !receiverId) {
 			return res
@@ -38,7 +38,10 @@ async function getFriendshipStatus(req, res) {
 				.json({ error: 'Missing parameters for reading friendship status.' });
 		}
 
-		const friendship = await dbGetFriendshipStatus(senderId, receiverId);
+		const friendship = await dbGetFriendshipStatus(
+			parseInt(senderId, 10),
+			parseInt(receiverId, 10)
+		);
 
 		return res.status(200).json(friendship);
 	} catch (error) {
