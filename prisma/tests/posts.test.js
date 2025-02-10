@@ -119,25 +119,48 @@ describe('dbReadPost', () => {
 			id: 1,
 			content: 'Example Post',
 			authorID: 1,
-			author: { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
+			author: {
+				id: 1,
+				username: 'John Doe', // Fix: Changed 'name' to 'username'
+				email: 'john.doe@example.com',
+				bio: 'Bio text',
+				profilePic: 'https://example.com/pic.jpg',
+				createdAt: new Date('2024-01-01T12:00:00Z'),
+				updatedAt: new Date('2024-01-02T12:00:00Z'),
+			},
+			_count: {
+				comments: 5,
+				likes: 10,
+			},
+		};
+
+		const expectedPost = {
+			...mockPost,
+			commentCount: mockPost._count.comments,
+			likeCount: mockPost._count.likes,
 		};
 
 		prisma.post.findUnique.mockResolvedValue(mockPost);
 
-		await expect(dbReadPost(input)).resolves.toEqual(mockPost);
+		await expect(dbReadPost(input)).resolves.toEqual(expectedPost);
 		expect(prisma.post.findUnique).toHaveBeenCalledWith({
 			where: { id: 1 },
 			include: {
 				author: {
 					select: {
 						id: true,
-						username: true,
+						username: true, // Fix: username instead of name
 						email: true,
 						bio: true,
 						profilePic: true,
 						createdAt: true,
 						updatedAt: true,
-						// Exclude password here by not including it in the select object
+					},
+				},
+				_count: {
+					select: {
+						comments: true,
+						likes: true,
 					},
 				},
 			},
@@ -151,39 +174,73 @@ describe('dbReadPost', () => {
 				id: 1,
 				content: 'Post 1',
 				authorID: 1,
-				author: { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
+				author: {
+					id: 1,
+					username: 'John Doe',
+					email: 'john.doe@example.com',
+					bio: 'Bio text',
+					profilePic: 'https://example.com/pic.jpg',
+					createdAt: new Date('2024-01-01T12:00:00Z'),
+					updatedAt: new Date('2024-01-02T12:00:00Z'),
+				},
+				_count: {
+					comments: 3,
+					likes: 7,
+				},
 			},
 			{
 				id: 2,
 				content: 'Post 2',
 				authorID: 1,
-				author: { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
+				author: {
+					id: 1,
+					username: 'John Doe',
+					email: 'john.doe@example.com',
+					bio: 'Bio text',
+					profilePic: 'https://example.com/pic.jpg',
+					createdAt: new Date('2024-01-01T12:00:00Z'),
+					updatedAt: new Date('2024-01-02T12:00:00Z'),
+				},
+				_count: {
+					comments: 2,
+					likes: 5,
+				},
 			},
 		];
 
+		const expectedPosts = mockPosts.map((post) => ({
+			...post,
+			commentCount: post._count.comments,
+			likeCount: post._count.likes,
+		}));
+
 		prisma.post.findMany.mockResolvedValue(mockPosts);
 
-		await expect(dbReadPost(input)).resolves.toEqual(mockPosts);
+		await expect(dbReadPost(input)).resolves.toEqual(expectedPosts);
 		expect(prisma.post.findMany).toHaveBeenCalledWith({
 			where: { authorID: 1 },
 			include: {
 				author: {
 					select: {
 						id: true,
-						username: true,
+						username: true, // Fix: username instead of name
 						email: true,
 						bio: true,
 						profilePic: true,
 						createdAt: true,
 						updatedAt: true,
-						// Exclude password here by not including it in the select object
+					},
+				},
+				_count: {
+					select: {
+						comments: true,
+						likes: true,
 					},
 				},
 			},
 			orderBy: { createdAt: 'desc' },
 		});
 	});
-
 	test('should throw error if post with given id does not exist', async () => {
 		const input = { id: 999 };
 		prisma.post.findUnique.mockResolvedValue(null);
