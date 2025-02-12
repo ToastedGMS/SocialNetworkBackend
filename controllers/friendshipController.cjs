@@ -2,6 +2,8 @@ const {
 	dbCreateFriendship,
 	dbGetFriendshipStatus,
 	dbUpdateFriendshipStatus,
+	dbGetFriendships,
+	dbGetPendingFriendships,
 } = require('../prisma/scripts/friendship.cjs');
 
 async function createFriendship(req, res) {
@@ -87,8 +89,38 @@ async function updateFriendshipStatus(req, res) {
 	}
 }
 
+async function getFriendships(req, res) {
+	try {
+		const { id } = req.params;
+
+		if (!id) {
+			return res
+				.status(400)
+				.json({ error: 'Missing parameters for reading friendships.' });
+		}
+
+		const acceptedFriendships = await dbGetFriendships(parseInt(id, 10));
+
+		const pendingFriendships = await dbGetPendingFriendships(parseInt(id, 10));
+
+		return res.status(200).json({
+			acceptedFriendships: acceptedFriendships,
+			pendingFriendships: pendingFriendships,
+		});
+	} catch (error) {
+		console.error('Error retrieving friendships:', error);
+
+		if (error.message.includes('Friendship not found')) {
+			return res.status(404).json({ error: error.message });
+		}
+
+		return res.status(500).json({ error: 'Internal server error' });
+	}
+}
+
 module.exports = {
 	createFriendship,
 	getFriendshipStatus,
 	updateFriendshipStatus,
+	getFriendships,
 };

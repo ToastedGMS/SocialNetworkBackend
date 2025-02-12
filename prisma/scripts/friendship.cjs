@@ -139,9 +139,6 @@ async function dbGetFriendships(id) {
 				},
 			},
 		});
-		if (acceptedFriendships.length === 0) {
-			throw new Error('No accepted friendships yet :(');
-		}
 
 		return acceptedFriendships;
 	} catch (error) {
@@ -150,9 +147,42 @@ async function dbGetFriendships(id) {
 	}
 }
 
+async function dbGetPendingFriendships(id) {
+	if (!id) {
+		throw new Error('Missing id for reading friendships.');
+	}
+	try {
+		const pendingFriendships = await prisma.friendship.findMany({
+			where: {
+				OR: [
+					{ senderId: id, status: 'Pending' },
+					{ receiverId: id, status: 'Pending' },
+				],
+			},
+			include: {
+				sender: {
+					select: { id: true, username: true, profilePic: true },
+				},
+				receiver: {
+					select: { id: true, username: true, profilePic: true },
+				},
+			},
+		});
+		if (pendingFriendships.length === 0) {
+			throw new Error('No pending friendships yet :(');
+		}
+
+		return pendingFriendships;
+	} catch (error) {
+		console.error('Error getting pending friendships:', error);
+		throw new Error(`Error retrieving pending friendships: ${error.message}`);
+	}
+}
+
 module.exports = {
 	dbCreateFriendship,
 	dbGetFriendshipStatus,
 	dbUpdateFriendshipStatus,
 	dbGetFriendships,
+	dbGetPendingFriendships,
 };

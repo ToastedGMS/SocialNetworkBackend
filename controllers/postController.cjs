@@ -77,10 +77,10 @@ async function generateFeed(req, res) {
 	try {
 		let friends = await dbGetFriendships(parseInt(id, 10));
 
-		if (!friends || friends.length === 0) {
-			console.log('No friends found');
-			return res.status(404).json({ error: 'No friends found' });
-		}
+		// if (!friends || friends.length === 0) {
+		// 	console.log('No friends found');
+		// 	return res.status(404).json({ error: 'No friends found' });
+		// }
 
 		// Include the user’s own ID in the list of IDs to fetch posts for
 		const IDs = [
