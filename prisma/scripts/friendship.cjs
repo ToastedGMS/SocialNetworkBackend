@@ -168,9 +168,6 @@ async function dbGetPendingFriendships(id) {
 				},
 			},
 		});
-		if (pendingFriendships.length === 0) {
-			throw new Error('No pending friendships yet :(');
-		}
 
 		return pendingFriendships;
 	} catch (error) {
