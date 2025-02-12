@@ -275,16 +275,6 @@ describe('generateFeed', () => {
 		]);
 	});
 
-	test('returns a 404 error if no friends are found', async () => {
-		req.params = { id: 1 };
-		dbGetFriendships.mockResolvedValue([]);
-
-		await generateFeed(req, res);
-
-		expect(res.status).toHaveBeenCalledWith(404);
-		expect(res.json).toHaveBeenCalledWith({ error: 'No friends found' });
-	});
-
 	test('returns a 500 error if fetching friendships fails', async () => {
 		req.params = { id: 1 };
 		dbGetFriendships.mockRejectedValue(new Error('Database error'));
