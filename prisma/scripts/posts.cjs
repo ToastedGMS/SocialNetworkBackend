@@ -1,6 +1,6 @@
 const prisma = require('../prismaClient/prismaClient.cjs');
 
-async function dbCreatePost({ authorID, content }) {
+async function dbCreatePost({ authorID, content, image }) {
 	if (!authorID || !content) {
 		throw new Error('Missing parameters for post creation.');
 	}
@@ -18,6 +18,7 @@ async function dbCreatePost({ authorID, content }) {
 			data: {
 				authorID: id,
 				content,
+				image: image || null,
 			},
 		});
 
@@ -176,7 +177,7 @@ async function dbDeletePost({ id }) {
 	}
 }
 
-async function dbUpdatePost({ id, content }) {
+async function dbUpdatePost({ id, content, image }) {
 	if (!id || !content) {
 		throw new Error(
 			'Missing parameters: Post ID and content are required for updating.'
@@ -194,7 +195,7 @@ async function dbUpdatePost({ id, content }) {
 
 		const updatedPost = await prisma.post.update({
 			where: { id },
-			data: { content },
+			data: { content, image: image || null },
 		});
 
 		return updatedPost;

@@ -8,8 +8,8 @@ const {
 
 async function createPost(req, res) {
 	try {
-		const { authorID, content } = req.body;
-		const newPost = await dbCreatePost({ authorID, content });
+		const { authorID, content, image } = req.body;
+		const newPost = await dbCreatePost({ authorID, content, image });
 		return res.status(201).json(newPost);
 	} catch (error) {
 		console.error('Error creating post:', error);
@@ -57,8 +57,12 @@ async function deletePost(req, res) {
 async function updatePost(req, res) {
 	try {
 		const { id } = req.params;
-		const { content } = req.body;
-		const updatedPost = await dbUpdatePost({ id: parseInt(id, 10), content });
+		const { content, image } = req.body;
+		const updatedPost = await dbUpdatePost({
+			id: parseInt(id, 10),
+			content,
+			image,
+		});
 		return res.status(200).json(updatedPost);
 	} catch (error) {
 		console.error('Error updating post:', error);

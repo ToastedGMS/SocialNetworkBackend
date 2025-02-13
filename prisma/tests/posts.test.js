@@ -340,7 +340,7 @@ describe('dbUpdatePost', () => {
 		});
 		expect(prisma.post.update).toHaveBeenCalledWith({
 			where: { id: 1 },
-			data: { content: 'Updated content' },
+			data: { content: 'Updated content', image: null },
 		});
 	});
 
