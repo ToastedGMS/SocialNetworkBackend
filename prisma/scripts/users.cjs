@@ -262,10 +262,6 @@ async function dbSearchUser(searchQuery) {
 			},
 		});
 
-		if (result.length === 0) {
-			throw new Error('No users found');
-		}
-
 		return result;
 	} catch (error) {
 		console.error('Unexpected database error:', error);

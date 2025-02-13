@@ -116,10 +116,6 @@ async function searchUser(req, res) {
 			return res.status(400).json({ error: error.message });
 		}
 
-		if (error.message.includes('No users found')) {
-			return res.status(404).json({ error: error.message });
-		}
-
 		return res
 			.status(500)
 			.json({ error: 'An error occurred while searching users' });

@@ -369,16 +369,6 @@ describe('searchUser', () => {
 		expect(res.json).toHaveBeenCalledWith({ users: mockUsers });
 	});
 
-	test('should return 404 if no users are found', async () => {
-		req.query.searchQuery = 'nonexistentUser';
-		dbSearchUser.mockRejectedValue(new Error('No users found'));
-
-		await searchUser(req, res);
-
-		expect(res.status).toHaveBeenCalledWith(404);
-		expect(res.json).toHaveBeenCalledWith({ error: 'No users found' });
-	});
-
 	test('should return 400 for an empty query', async () => {
 		req.query.searchQuery = '';
 		await searchUser(req, res);

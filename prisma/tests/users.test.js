@@ -580,13 +580,6 @@ describe('dbSearchUser', () => {
 		);
 	});
 
-	test('should return a message if no result is found', async () => {
-		prisma.user.findMany.mockResolvedValue([]);
-
-		await expect(dbSearchUser('inexistentUser')).rejects.toThrow(
-			'No users found'
-		);
-	});
 	test('should return matching users when a valid search query is provided', async () => {
 		const mockUsers = [
 			{ id: 1, username: 'testUser1', email: 'test1@example.com' },
