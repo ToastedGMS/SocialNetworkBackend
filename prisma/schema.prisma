@@ -28,6 +28,7 @@ model User {
   posts Post[]
   comments Comment[]
   likes Like[]
+  notifications Notification []
 }
 
 enum FriendshipStatus {
@@ -85,4 +86,22 @@ model Like {
   commentID Int? 
 
   // @check("postID IS NOT NULL OR commentID IS NOT NULL")
+}
+
+enum NotificationType {
+  Comment
+  Like_Post
+  Like_Comment
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  senderID   Int
+  receiverID Int
+  contentID  Int
+  type       NotificationType
+  createdAt  DateTime @default(now())
+  read       Boolean  @default(false)
+
+  receiver   User     @relation(fields: [receiverID], references: [id])
 }
