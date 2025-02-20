@@ -15,6 +15,7 @@ const io = new Server(server, {
 		origin: '*',
 	},
 });
+module.exports = { io };
 
 // Router files
 const userRoutes = require('./routes/userRoutes.cjs');

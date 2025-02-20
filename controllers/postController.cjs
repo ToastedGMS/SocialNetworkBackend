@@ -1,3 +1,4 @@
+const { io } = require('../index.cjs');
 const { dbGetFriendships } = require('../prisma/scripts/friendship.cjs');
 const {
 	dbCreatePost,
@@ -5,11 +6,11 @@ const {
 	dbDeletePost,
 	dbUpdatePost,
 } = require('../prisma/scripts/posts.cjs');
-
 async function createPost(req, res) {
 	try {
 		const { authorID, content, image } = req.body;
 		const newPost = await dbCreatePost({ authorID, content, image });
+		io.emit('new_post');
 		return res.status(201).json(newPost);
 	} catch (error) {
 		console.error('Error creating post:', error);
