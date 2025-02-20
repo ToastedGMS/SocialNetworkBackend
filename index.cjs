@@ -64,7 +64,7 @@ io.on('connect', (socket) => {
 		}
 	});
 
-	socket.on('new_like', async ({ sender, receiver, post }) => {
+	socket.on('new_like', async ({ sender, receiver, post, senderName }) => {
 		try {
 			const senderID = parseInt(sender, 10);
 			const receiverID = parseInt(receiver, 10);
@@ -86,7 +86,8 @@ io.on('connect', (socket) => {
 				senderID,
 				receiverID,
 				contentID: postID,
-				type: 'Like_Post',
+				type: 'liked your post!',
+				senderName,
 			});
 
 			const receiverSocket = connectedUsers.get(receiverID);

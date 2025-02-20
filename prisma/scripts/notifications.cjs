@@ -1,6 +1,12 @@
 const prisma = require('../prismaClient/prismaClient.cjs');
 
-async function dbCreateNotification({ senderID, receiverID, contentID, type }) {
+async function dbCreateNotification({
+	senderID,
+	receiverID,
+	contentID,
+	type,
+	senderName,
+}) {
 	if (!senderID || !receiverID || !contentID || !type) {
 		throw new Error('Missing parameters for notification creation.');
 	}
@@ -12,6 +18,7 @@ async function dbCreateNotification({ senderID, receiverID, contentID, type }) {
 				receiverID,
 				type,
 				contentID,
+				senderName,
 			},
 		});
 		return notification;
