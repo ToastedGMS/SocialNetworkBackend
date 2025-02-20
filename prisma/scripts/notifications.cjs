@@ -36,11 +36,14 @@ async function dbReadNotifications(receiverID) {
 	}
 
 	try {
-		const notifs = await prisma.notification.findMany({
-			where: { receiverID },
+		const readNotifs = await prisma.notification.findMany({
+			where: { receiverID, read: true },
+		});
+		const unreadNotifs = await prisma.notification.findMany({
+			where: { receiverID, read: false },
 		});
 
-		return notifs;
+		return { readNotifs, unreadNotifs };
 	} catch (error) {
 		console.error('Database error in dbReadNotifications:', error);
 		throw new Error('Failed to fetch notifications.');

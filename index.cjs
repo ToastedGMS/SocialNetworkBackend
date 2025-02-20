@@ -119,6 +119,50 @@ io.on('connect', (socket) => {
 		}
 	});
 
+	socket.on('new_comment', async ({ sender, receiver, post, senderName }) => {
+		try {
+			const senderID = parseInt(sender, 10);
+			const receiverID = parseInt(receiver, 10);
+			const postID = parseInt(post, 10);
+
+			if (!senderID || !receiverID || !postID) {
+				console.error('Invalid parameters for new_comment event.');
+				return;
+			}
+
+			if (senderID === receiverID) {
+				console.log(
+					`User ${senderID} commented on their own post. No notification created.`
+				);
+				return;
+			}
+
+			const notif = await dbCreateNotification({
+				senderID,
+				receiverID,
+				contentID: postID,
+				type: 'commented on your post!',
+				senderName,
+			});
+
+			const receiverSocket = connectedUsers.get(receiverID);
+			if (receiverSocket) {
+				io.to(receiverSocket).emit('comment_notification', {
+					sender: senderID,
+					post: postID,
+				});
+			} else {
+				console.log(`User ${receiverID} is not online.`);
+			}
+
+			console.log(
+				`User ${senderID} commented on user ${receiverID}'s post (ID: ${postID})`
+			);
+		} catch (error) {
+			console.error('Error handling new_comment event:', error);
+		}
+	});
+
 	socket.on('disconnect', () => {
 		for (const [id, socketId] of connectedUsers.entries()) {
 			if (socketId === socket.id) {
