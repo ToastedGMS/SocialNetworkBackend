@@ -5,6 +5,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 dotenv.config();
 const { Server } = require('socket.io');
+const { dbCreateNotification } = require('./prisma/scripts/notifications.cjs');
+const prisma = require('./prisma/prismaClient/prismaClient.cjs');
 
 // Middleware
 const server = http.createServer(app);
@@ -24,8 +26,7 @@ const commentRoutes = require('./routes/commentRoutes.cjs');
 const likeRoutes = require('./routes/likeRoutes.cjs');
 const friendshipRoutes = require('./routes/friendshipRoutes.cjs');
 const notificationRoutes = require('./routes/notificationRoutes.cjs');
-const { dbCreateNotification } = require('./prisma/scripts/notifications.cjs');
-const prisma = require('./prisma/prismaClient/prismaClient.cjs');
+const uploadRoute = require('./routes/uploadRoute.cjs');
 
 // Mount routes
 app.use('/api/users', userRoutes);
@@ -34,6 +35,7 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/friendships', friendshipRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/upload', uploadRoute);
 
 // Port
 const PORT = process.env.PORT || 3000;
@@ -42,6 +44,7 @@ server.listen(PORT, () => {
 	console.log(`Server is running on http://localhost:${PORT}`);
 });
 
+// Socket setup
 const connectedUsers = new Map();
 
 io.on('connect', (socket) => {
