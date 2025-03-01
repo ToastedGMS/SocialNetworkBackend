@@ -7,14 +7,6 @@ dotenv.config();
 const { Server } = require('socket.io');
 const { dbCreateNotification } = require('./prisma/scripts/notifications.cjs');
 const prisma = require('./prisma/prismaClient/prismaClient.cjs');
-const fs = require('fs');
-
-const source =
-	'/home/gabrielmgs/repos/SocialNetworkBackend/file-uploader42069-firebase-adminsdk-1th49-7328f85525.json';
-const destination = '/firebaseAuth/serviceAccountKey.json'; // Mounted volume path
-
-fs.copyFileSync(source, destination);
-console.log('Firebase Admin SDK file copied to volume.');
 
 // Middleware
 const server = http.createServer(app);
