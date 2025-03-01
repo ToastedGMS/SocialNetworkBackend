@@ -14,7 +14,7 @@ app.use(express.json());
 const corsOptions = {
 	origin: 'https://socialnetworkfrontend-production.up.railway.app',
 	methods: '*', // Allow all methods
-	allowedHeaders: ['Content-Type'],
+	allowedHeaders: ['Content-Type', 'Authorization'], // Allow 'Authorization' header
 	credentials: true,
 };
 
@@ -23,7 +23,7 @@ const io = new Server(server, {
 	cors: {
 		origin: 'https://socialnetworkfrontend-production.up.railway.app',
 		methods: '*', // Allow all methods
-		allowedHeaders: ['Content-Type'],
+		allowedHeaders: ['Content-Type', 'Authorization'], // Allow 'Authorization' header
 		credentials: true,
 	},
 });
