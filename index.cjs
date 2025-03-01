@@ -7,15 +7,15 @@ dotenv.config();
 const { Server } = require('socket.io');
 const { dbCreateNotification } = require('./prisma/scripts/notifications.cjs');
 const prisma = require('./prisma/prismaClient/prismaClient.cjs');
-
 const allowedOrigins = [
 	'https://socialnetworkfrontend-production.up.railway.app',
-	'https://orion-ndk.netlify.app/',
+	'https://orion-ndk.netlify.app',
 ];
 
 // Middleware
 const server = http.createServer(app);
 app.use(express.json());
+
 const corsOptions = {
 	origin: (origin, callback) => {
 		if (allowedOrigins.includes(origin) || !origin) {
@@ -24,12 +24,17 @@ const corsOptions = {
 			callback(new Error('Not allowed by CORS'), false);
 		}
 	},
-	methods: '*', // Allow all methods
+	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow specific methods, including OPTIONS
 	allowedHeaders: ['Content-Type', 'Authorization'], // Allow 'Authorization' header
 	credentials: true,
 };
 
-app.use(cors(corsOptions)); // Apply CORS middleware to all routes
+// Apply CORS middleware to all routes
+app.use(cors(corsOptions));
+
+// Handle OPTIONS preflight requests explicitly
+app.options('*', cors(corsOptions)); // This will respond with the proper CORS headers for preflight requests
+
 const io = new Server(server, {
 	cors: {
 		origin: (origin, callback) => {
@@ -39,7 +44,7 @@ const io = new Server(server, {
 				callback(new Error('Not allowed by CORS'), false);
 			}
 		},
-		methods: '*', // Allow all methods
+		methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow specific methods
 		allowedHeaders: ['Content-Type', 'Authorization'], // Allow 'Authorization' header
 		credentials: true,
 	},
