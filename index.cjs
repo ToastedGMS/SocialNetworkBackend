@@ -12,7 +12,7 @@ const prisma = require('./prisma/prismaClient/prismaClient.cjs');
 const server = http.createServer(app);
 app.use(express.json());
 const corsOptions = {
-	origin: 'https://socialnetworkfrontend-production.up.railway.app/',
+	origin: 'https://socialnetworkfrontend-production.up.railway.app',
 	methods: '*', // Allow all methods
 	allowedHeaders: ['Content-Type'],
 	credentials: true,
@@ -21,7 +21,7 @@ const corsOptions = {
 app.use(cors(corsOptions)); // Apply CORS middleware to all routes
 const io = new Server(server, {
 	cors: {
-		origin: 'https://socialnetworkfrontend-production.up.railway.app/',
+		origin: 'https://socialnetworkfrontend-production.up.railway.app',
 		methods: '*', // Allow all methods
 		allowedHeaders: ['Content-Type'],
 		credentials: true,
