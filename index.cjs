@@ -11,7 +11,6 @@ const prisma = require('./prisma/prismaClient/prismaClient.cjs');
 // Middleware
 const server = http.createServer(app);
 app.use(express.json());
-app.use(cors());
 const corsOptions = {
 	origin: '*',
 	methods: '*', // Allow all methods
