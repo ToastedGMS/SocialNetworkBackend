@@ -13,12 +13,7 @@ const server = http.createServer(app);
 app.use(express.json());
 app.use(cors());
 const io = new Server(server, {
-	cors: {
-		origin: '*',
-		methods: '*', // Allow all methods
-		allowedHeaders: ['Content-Type'],
-		credentials: true,
-	},
+	cors: { origin: '*' },
 });
 
 module.exports = { io };
