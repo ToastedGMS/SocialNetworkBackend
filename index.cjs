@@ -8,11 +8,22 @@ const { Server } = require('socket.io');
 const { dbCreateNotification } = require('./prisma/scripts/notifications.cjs');
 const prisma = require('./prisma/prismaClient/prismaClient.cjs');
 
+const allowedOrigins = [
+	'https://socialnetworkfrontend-production.up.railway.app',
+	'https://orion-ndk.netlify.app/',
+];
+
 // Middleware
 const server = http.createServer(app);
 app.use(express.json());
 const corsOptions = {
-	origin: 'https://socialnetworkfrontend-production.up.railway.app',
+	origin: (origin, callback) => {
+		if (allowedOrigins.includes(origin) || !origin) {
+			callback(null, true);
+		} else {
+			callback(new Error('Not allowed by CORS'), false);
+		}
+	},
 	methods: '*', // Allow all methods
 	allowedHeaders: ['Content-Type', 'Authorization'], // Allow 'Authorization' header
 	credentials: true,
