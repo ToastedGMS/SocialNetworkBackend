@@ -32,7 +32,13 @@ const corsOptions = {
 app.use(cors(corsOptions)); // Apply CORS middleware to all routes
 const io = new Server(server, {
 	cors: {
-		origin: 'https://socialnetworkfrontend-production.up.railway.app',
+		origin: (origin, callback) => {
+			if (allowedOrigins.includes(origin) || !origin) {
+				callback(null, true);
+			} else {
+				callback(new Error('Not allowed by CORS'), false);
+			}
+		},
 		methods: '*', // Allow all methods
 		allowedHeaders: ['Content-Type', 'Authorization'], // Allow 'Authorization' header
 		credentials: true,
