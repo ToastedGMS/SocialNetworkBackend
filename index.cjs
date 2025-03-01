@@ -14,9 +14,13 @@ app.use(express.json());
 app.use(cors());
 const io = new Server(server, {
 	cors: {
-		origin: '*',
+		origin: 'https://socialnetworkfrontend-production.up.railway.app',
+		methods: '*', // Allow all methods
+		allowedHeaders: ['Content-Type'],
+		credentials: true,
 	},
 });
+
 module.exports = { io };
 
 // Router files
