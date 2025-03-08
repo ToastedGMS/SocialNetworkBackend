@@ -259,6 +259,7 @@ async function dbSearchUser(searchQuery) {
 				username: true,
 				email: true,
 				profilePic: true,
+				bio: true,
 			},
 		});
 
