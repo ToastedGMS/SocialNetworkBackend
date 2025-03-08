@@ -8,8 +8,9 @@ const { Server } = require('socket.io');
 const { dbCreateNotification } = require('./prisma/scripts/notifications.cjs');
 const prisma = require('./prisma/prismaClient/prismaClient.cjs');
 const allowedOrigins = [
-	'https://socialnetworkfrontend-production.up.railway.app',
-	'https://orion-ndk.netlify.app',
+	process.env.CORS_SOURCE_A,
+	process.env.CORS_SOURCE_B,
+	process.env.CORS_SOURCE_C,
 ];
 
 // Middleware
