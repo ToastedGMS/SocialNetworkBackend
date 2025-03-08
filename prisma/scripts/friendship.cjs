@@ -57,10 +57,10 @@ async function dbGetFriendshipStatus(senderId, receiverId) {
 			},
 			include: {
 				sender: {
-					select: { id: true, username: true, profilePic: true },
+					select: { id: true, username: true, profilePic: true, bio: true },
 				},
 				receiver: {
-					select: { id: true, username: true, profilePic: true },
+					select: { id: true, username: true, profilePic: true, bio: true },
 				},
 			},
 		});
@@ -103,10 +103,10 @@ async function dbUpdateFriendshipStatus(senderId, receiverId, status) {
 			data: { status },
 			include: {
 				sender: {
-					select: { id: true, username: true, profilePic: true },
+					select: { id: true, username: true, profilePic: true, bio: true },
 				},
 				receiver: {
-					select: { id: true, username: true, profilePic: true },
+					select: { id: true, username: true, profilePic: true, bio: true },
 				},
 			},
 		});
@@ -132,10 +132,10 @@ async function dbGetFriendships(id) {
 			},
 			include: {
 				sender: {
-					select: { id: true, username: true, profilePic: true },
+					select: { id: true, username: true, profilePic: true, bio: true },
 				},
 				receiver: {
-					select: { id: true, username: true, profilePic: true },
+					select: { id: true, username: true, profilePic: true, bio: true },
 				},
 			},
 		});
@@ -161,10 +161,10 @@ async function dbGetPendingFriendships(id) {
 			},
 			include: {
 				sender: {
-					select: { id: true, username: true, profilePic: true },
+					select: { id: true, username: true, profilePic: true, bio: true },
 				},
 				receiver: {
-					select: { id: true, username: true, profilePic: true },
+					select: { id: true, username: true, profilePic: true, bio: true },
 				},
 			},
 		});
