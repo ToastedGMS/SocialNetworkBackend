@@ -1,6 +1,8 @@
 # **Social Network Backend**
 
-Welcome to the official repository of the **Social Network Backend**, a backend API built using **Express.js** and **Prisma** with **PostgreSQL** for a full-featured social networking application. This backend supports user authentication, CRUD operations for posts, comments, likes, and real-time features. It also integrates JWT-based authentication and utilizes a PostgreSQL database managed through **Supabase**.
+Welcome to the official repository of the **Social Network Backend**, a backend API built using **Express.js** and **Prisma** with **PostgreSQL** for a full-featured social networking application. This backend supports user authentication, CRUD operations for posts, comments, likes, and real-time features. It also integrates JWT-based authentication and utilizes a PostgreSQL database.
+
+You can test the live demo of the frontend here [Live Frontend Demo](https://socialnetworkfrontend-production.up.railway.app/).
 
 ---
 
@@ -203,6 +205,5 @@ This project is licensed under the **MIT License** - see the LICENSE file for de
 
 - **Express.js**: Fast, unopinionated web framework for Node.js.
 - **Prisma**: Next-generation ORM for Node.js and TypeScript.
-- **Supabase**: Open-source Firebase alternative for databases, authentication, and more.
 - **JWT**: JSON Web Tokens for stateless authentication.
 - **Postman**: Your single platform for collaborative API development.
